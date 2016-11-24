@@ -199,7 +199,7 @@ def one_hot_decoder(examples_ind, map_ind2feat):
 			#example.append(np.nonzero(examples_ohe[i,j,:])[0].tolist())
 	return examples
 
-def array2midi(pitch, duration, metadata, filename="original"):
+def array2midi(pitch, duration, metadata, filepath="../data/models/",filename="original"):
 	# Convert numpy arrays to lists
 	#pitch_list = pitch.tolist()
 	#duration_list = duration.tolist()
@@ -221,7 +221,7 @@ def array2midi(pitch, duration, metadata, filename="original"):
 			melody.append(n)
 		# Convert and save stream to midi file
 		mf = midi.translate.streamToMidiFile(melody)
-		mf.open("melody_{}_".format(i, filename) + '.mid','wb')
+		mf.open(filepath + "melody_{}_{}".format(i, filename) + '.mid','wb')
 		mf.write()
 		mf.close()
 
@@ -324,6 +324,7 @@ def main():
 			print("Note {}:".format(i+1))
 			print("\tPitch:\n\t\tdecoded={}\toriginal={}".format(pitch_decoded[s,i], data["pitch"][s][i]))
 			print("\tDuration:\n\t\tdecoded={}\toriginal={}".format(duration_decoded[s,i], data["duration"][s][i]))
+
 
 if __name__ == '__main__':
 	main()

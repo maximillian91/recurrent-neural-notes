@@ -1,4 +1,4 @@
-from data import load_data, array2midi
+from data import load_data, array2midi, one_hot_decoder
 from aux import models_path
 from grulayer import GRUOutputInLayer
 import cPickle as pickle
@@ -70,7 +70,7 @@ NUM_FEATURES_total = NUM_FEATURES_duration + NUM_FEATURES_pitch
 
 BATCH_SIZE = 10
 NUM_UNITS_GRU = 25
-N_epochs = 10
+N_epochs = 2
 
 fig_path = "../models/fig/{}_gru_{}_bs_{}_e_{}_".format(model_name, NUM_UNITS_GRU, BATCH_SIZE, N_epochs) 
 data_path = "../data/models/{}_gru_{}_bs_{}_e_{}_".format(model_name, NUM_UNITS_GRU, BATCH_SIZE, N_epochs) 
@@ -356,10 +356,21 @@ number_of_test_examples = 3
 #test_slice = slice(number_of_test_examples)
 test_cost_pitch, test_acc_pitch, test_output_pitch, test_cost_duration, test_acc_duration, test_output_duration = f_eval(x_pitch_test, y_pitch_test, x_duration_test, y_duration_test, mask_test)
 
-max_prob_pitch = np.argmax(test_output_pitch,axis=2)
-max_prob_duration = np.argmax(test_output_duration,axis=2)
-y_pitch_test_max = np.argmax(y_pitch_test,axis=2)
-y_duration_test_max = np.argmax(y_duration_test,axis=2)
+max_prob_pitch_recon = np.argmax(test_output_pitch,axis=2)
+max_prob_duration_recon = np.argmax(test_output_duration,axis=2)
+max_prob_pitch_orig = np.argmax(y_pitch_test,axis=2)
+max_prob_duration_orig = np.argmax(y_duration_test,axis=2)
+
+# Convert 3 first examples to the original feature values:
+pitch_decoded_recon = one_hot_decoder(max_prob_pitch_recon[0:3], data["pitch"]["map_ind2feat"])
+duration_decoded_recon = one_hot_decoder(max_prob_duration_recon[0:3], data["duration"]["map_ind2feat"]) 
+
+pitch_decoded_orig = one_hot_decoder(max_prob_pitch_orig[0:3], data["pitch"]["map_ind2feat"])
+duration_decoded_orig = one_hot_decoder(max_prob_duration_orig[0:3], data["duration"]["map_ind2feat"]) 
+
+# Write 3 first examples to midi files:
+array2midi(max_prob_pitch_recon[0:3], max_prob_duration_recon[0:3], data["metadata"][0:3], filepath=data_path, filename="recon")
+array2midi(max_prob_pitch_orig[0:3], max_prob_duration_orig[0:3], data["metadata"][0:3], filepath=data_path, filename="orig")
 
 
 
@@ -368,12 +379,12 @@ y_duration_test_max = np.argmax(y_duration_test,axis=2)
 print("Inspect the first {} melodies:".format(number_of_test_examples))
 for i in range(number_of_test_examples):
 	print("Pitch targets and prediction")
-	print(y_pitch_test_max[i])
-	print(max_prob_pitch[i])
+	print(max_prob_pitch_orig[i])
+	print(max_prob_pitch_recon[i])
 
 	print("Duration targets and prediction")
-	print(y_duration_test_max[i])
-	print(max_prob_duration[i])
+	print(max_prob_duration_orig[i])
+	print(max_prob_duration_recon[i])
 
 
 with open(data_path + "train_output_pitch.pkl", "wb") as file:
