@@ -5,8 +5,7 @@ from pprint import pprint
 import cPickle as pickle
 import os.path
 from os import listdir
-from music21 import converter
-from music21 import note
+from music21 import converter, note, stream, duration, midi
 
 def save_data_from_abc_files(data_file="data"):	
 	# Data collection: For saving and returning the abc-data files in a dict of list of lists. 
@@ -51,11 +50,11 @@ def save_data_from_abc_files(data_file="data"):
 	                pitch_score.append(n.pitch.midi)
 	                duration_score.append(float(n.duration.quarterLength))
 	            elif type(n) is note.Rest:
-	                pitch_score.append(1000) # we set the midi-pitch-code for rests to 1000 (greatest pitch value = last bit in 1-hot-encoded vector)
+	                pitch_score.append(-1.0) # we set the midi-pitch-code for rests to 1000 (greatest pitch value = last bit in 1-hot-encoded vector)
 	                duration_score.append(float(n.duration.quarterLength))
 	        # We set last step in pitch and duration to -1 for end-of-sequence marker (<eos>). e.g. min pitch value = first bit in 1-hot-encoded vector
-	        pitch_score.append(-1)
-	        duration_score.append(-1.0)
+	        pitch_score.append(-2.0)
+	        duration_score.append(0.0)
 
 	        # Add the score (example) to the list of scores.
 	        pitch_opus.append(pitch_score)
@@ -93,8 +92,8 @@ def save_data_from_abc_files(data_file="data"):
 	                pitch_score.append(1000) # we set the midi-pitch-code for rests to 1000 (greatest pitch value = last bit in 1-hot-encoded vector)
 	                duration_score.append(float(n.duration.quarterLength))
 	        # We set last step in pitch and duration to -1 for end-of-sequence marker (<eos>). e.g. min pitch value = first bit in 1-hot-encoded vector
-	        pitch_score.append(-1)
-	        duration_score.append(-1.0)
+	        pitch_score.append(-2.0)
+	        duration_score.append(0.0)
 
 	        pitch_opus.append(pitch_score)
 	        duration_opus.append(duration_score)
@@ -149,32 +148,42 @@ def unique_feature_set_mapping(examples):
 
 	return feat2ind, ind2feat
 
-
 def one_hot_encoder(examples):
 	N = len(examples)
 	MAX_SEQ_LEN = len(max(examples,key=len))
 	feat2ind, ind2feat = unique_feature_set_mapping(examples)
 	NUM_FEATURES = len(feat2ind)
+	eos_value = examples[0][-1]
+
+
 
 	# One-hot-encoding step which returns 3D numpy arrays of dimensions:
 		# dim(input_pitch) = (N, MAX_SEQ_LEN, NUM_FEATURES)
-	examples_ohe = np.zeros((N, MAX_SEQ_LEN, NUM_FEATURES)).astype("int64")
+	examples_ohe = np.zeros((N, MAX_SEQ_LEN, NUM_FEATURES)).astype("int32")
 	examples_mask = np.zeros((N, MAX_SEQ_LEN)).astype("float32")
-	examples_ind = np.zeros((N, MAX_SEQ_LEN)).astype("int64")
-	for i, x in enumerate(examples):
-		for j, t in enumerate(x):
+	examples_ind = np.zeros((N, MAX_SEQ_LEN)).astype("int32")
+	examples_pad = eos_value*np.ones((N, MAX_SEQ_LEN)).astype("float32")
+
+	for i in range(N):
+		for j in range(MAX_SEQ_LEN):
+			if j >= len(examples[i]):
+				t = eos_value
+			else:
+				t = examples[i][j]
 			examples_ohe[i,j,feat2ind[t]] = 1
 			examples_mask[i,j] = 1
 			examples_ind[i,j] = feat2ind[t]
+			examples_pad[i,j] = t
 		# examples_mask[i,len(x)-1] = 0
-	return examples_ohe, examples_ind, examples_mask, feat2ind, ind2feat
+	return examples_ohe, examples_pad, examples_ind, examples_mask, feat2ind, ind2feat
 
-def one_hot_decoder(examples_ohe, map_ind2feat):
-	nonzero_idx = np.nonzero(examples_ohe)
-	examples_shape = np.shape(examples_ohe)
+def one_hot_decoder(examples_ind, map_ind2feat):
+	# Examples are not one-hot-encoded, but passed after argmax
+	# map_ind2feat is the dictionary mapping from argmax-index to the original feature value.
+	examples_shape = np.shape(examples_ind)
 	N_total = examples_shape[0]
 	MAX_SEQ_LEN = examples_shape[1]
-	NUM_FEATURES = examples_shape[2]
+	#NUM_FEATURES = examples_shape[2]
 
 	# Outcommented 
 	#examples_flattened = examples_ohe.flatten() 
@@ -186,10 +195,35 @@ def one_hot_decoder(examples_ohe, map_ind2feat):
 	for i in range(N_total):
 		for j in range(MAX_SEQ_LEN):
 			#examples[i,j] = map_ind2feat[examples_feat_ind[i,j]]
-			examples[i,j] = map_ind2feat[np.argmax(examples_ohe[i,j,:])]
+			examples[i,j] = map_ind2feat[examples_ind[i,j]]
 			#example.append(np.nonzero(examples_ohe[i,j,:])[0].tolist())
 	return examples
 
+def array2midi(pitch, duration, metadata, filename="original"):
+	# Convert numpy arrays to lists
+	#pitch_list = pitch.tolist()
+	#duration_list = duration.tolist()
+
+	# Convert lists to music21 stream
+	N, M = pitch.shape
+
+	for i in range(N):
+		melody = stream.Stream()
+		for j in range(M):
+			if pitch[i,j] < -1:
+				continue
+			elif pitch[i,j] == -1:
+				n = note.Rest()
+			else: 
+				n = note.Note()
+				n.pitch.midi = pitch[i,j]
+			n.duration.quarterLength = duration[i,j]
+			melody.append(n)
+		# Convert and save stream to midi file
+		mf = midi.translate.streamToMidiFile(melody)
+		mf.open("melody_{}_".format(i, filename) + '.mid','wb')
+		mf.write()
+		mf.close()
 
 def save_partitioning(data=None, data_file="data", partition_file="partition", train_partition=0.8):
  	# path for pickled files:
@@ -253,15 +287,15 @@ def load_data(data_file="data", partition_file="partition", train_partition=0.8)
 	# One-hot-encoding step which returns 3D numpy arrays of dimensions:
 		# dim(input_pitch) = (N_total, MAX_SEQ_LEN, NUM_PITCHES)
 		# dim(input_duration) = (N_total, MAX_SEQ_LEN, NUM_DURATIONS) 
-	x_pitch_ohe, x_pitch, x_pitch_mask, feat2ind_pitch, ind2feat_pitch = one_hot_encoder(data["pitch"])
-	x_duration_ohe, x_duration, x_duration_mask, feat2ind_duration, ind2feat_duration = one_hot_encoder(data["duration"])
+	x_pitch_ohe, x_pitch, x_pitch_ind, x_pitch_mask, feat2ind_pitch, ind2feat_pitch = one_hot_encoder(data["pitch"])
+	x_duration_ohe, x_duration, x_duration_ind, x_duration_mask, feat2ind_duration, ind2feat_duration = one_hot_encoder(data["duration"])
 
 	data_ohe = {}
 	data_ohe["train_idx"] = partition["train_idx"]
 	data_ohe["valid_idx"] = partition["valid_idx"]
 	data_ohe["test_idx"] = partition["test_idx"]
-	data_ohe["pitch"] = {"encoded": x_pitch_ohe, "indices": x_pitch, "map_ind2feat": ind2feat_pitch, "map_feat2ind": feat2ind_pitch}
-	data_ohe["duration"] = {"encoded": x_duration_ohe, "indices": x_duration, "map_ind2feat": ind2feat_duration, "map_feat2ind": feat2ind_duration}
+	data_ohe["pitch"] = {"encoded": x_pitch_ohe, "original": x_pitch, "indices": x_pitch_ind, "map_ind2feat": ind2feat_pitch, "map_feat2ind": feat2ind_pitch}
+	data_ohe["duration"] = {"encoded": x_duration_ohe, "original": x_duration, "indices": x_duration_ind, "map_ind2feat": ind2feat_duration, "map_feat2ind": feat2ind_duration}
 	data_ohe["mask"] = x_pitch_mask
 	data_ohe["metadata"] = data["metadata"]
 	data_ohe["file_slices"] = data["file_slices"]
@@ -275,8 +309,10 @@ def main():
 	# data_file_path = pkl_path + data_file + ".pkl"
 
 	data_ohe, data = load_data(data_file="data_new", partition_file="partition", train_partition=0.8)
-	pitch_decoded = one_hot_decoder(data_ohe["pitch"]["encoded"], data_ohe["pitch"]["map_ind2feat"])
-	duration_decoded = one_hot_decoder(data_ohe["duration"]["encoded"], data_ohe["duration"]["map_ind2feat"])
+	pitch_decoded = one_hot_decoder(data_ohe["pitch"]["indices"], data_ohe["pitch"]["map_ind2feat"])
+	duration_decoded = one_hot_decoder(data_ohe["duration"]["indices"], data_ohe["duration"]["map_ind2feat"])
+
+	array2midi(pitch_decoded[0:2], duration_decoded[0:2], data["metadata"], filename="original")
 	# print("Number of tunes in collection: {}".format(len(x_pitch)))
 	# print(len(x_pitch[data_slices["jigs"]]))
 	# #print(x_duration[data_slices["reels"]])

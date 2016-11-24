@@ -329,14 +329,16 @@ class GRUOutputInLayer(MergeLayer):
             out = get_output(self.output_network, hid, **kwargs)
             return out, hid
 
-        def step_masked(input_n, mask_n, hid_previous, *args): # TODO
-            hid = step(input_n, hid_previous, *args)
+        def step_masked(input_n, mask_n, output_previous, hid_previous, *args): # TODO
+            out, hid = step(input_n, output_previous, hid_previous, *args)
 
             # Skip over any input with mask 0 by copying the previous
             # hidden state; proceed normally for any input with mask 1.
+            
             hid = T.switch(mask_n, hid, hid_previous)
+            out = T.switch(mask_n, out, input_n)
 
-            return hid
+            return out, hid
 
         if mask is not None:
             # mask is given as (batch_size, seq_len). Because scan iterates

@@ -1,10 +1,12 @@
-from data import load_data, one_hot_decoder
+from data import load_data
 from aux import models_path
 import cPickle as pickle
 import os.path
 from os import listdir
 
 import lasagne
+from lasagne.nonlinearities import linear
+from lasagne.nonlinearities import softmax
 import theano
 import theano.tensor as T
 import matplotlib
@@ -12,6 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn
 seaborn.set(style='ticks', palette='Set2')
+
 
 ####### RNN Model for folk music composition ########
 
@@ -25,35 +28,32 @@ print(os.getcwd())
 #else:
 #	new_model_number = max(model_numbering) + 1
 
-new_model_number = 1
+new_model_number = 0
 
 model_dir = "model_" + str(new_model_number)
 
-fig_path = models_path("model_1/fig")
+fig_path = models_path("model_0/fig")
 fig_path += "/"
 
-pkl_path = "../models/model_1/pkl/"
-fig_path = "../models/model_1/fig/"
-
 # Importing data
-data, _ = load_data(data_file="data_1", partition_file="partition", train_partition=0.8)
+data_ohe, data = load_data(data_file="data_with_eos", partition_file="partition", train_partition=0.8)
 
 data_pitch_ohe = data["pitch"]["encoded"]
-data_pitch = data["pitch"]["indices"]
+data_pitch = data["pitch"]["original"]
 data_duration_ohe = data["duration"]["encoded"]
-data_duration = data["duration"]["indices"]
+data_duration = data["duration"]["original"]
 
 
 # Setting model parameters
-data_pitch_shape = np.shape(data_pitch_ohe)
+data_pitch_shape = np.shape(data_pitch)
 N_total = data_pitch_shape[0]
 MAX_SEQ_LEN = data_pitch_shape[1]-1
-NUM_FEATURES_pitch = data_pitch_shape[2]
+#NUM_FEATURES_pitch = data_pitch_shape[2]
 
 data_duration_shape = np.shape(data_duration_ohe)
-NUM_FEATURES_duration = data_duration_shape[2]
+#NUM_FEATURES_duration = data_duration_shape[2]
 
-NUM_FEATURES_total = NUM_FEATURES_duration + NUM_FEATURES_pitch
+# NUM_FEATURES_total = NUM_FEATURES_duration + NUM_FEATURES_pitch
 
 BATCH_SIZE = 10
 NUM_UNITS_ENC = 25
@@ -61,36 +61,36 @@ NUM_UNITS_DEC = 25
 
 
 #symbolic theano variables. Note that we are using imatrix for X since it goes into the embedding layer
-x_pitch_sym  = T.itensor3('x_pitch_sym')
-x_duration_sym = T.itensor3('x_duration_sym')
+x_pitch_sym  = T.matrix('x_pitch_sym').astype('float32')
+x_duration_sym = T.matrix('x_duration_sym').astype('float32')
 
-y_pitch_sym = T.itensor3('y_pitch_sym')
-y_duration_sym = T.itensor3('y_duration_sym')
+y_pitch_sym = T.matrix('y_pitch_sym').astype('float32')
+y_duration_sym = T.matrix('y_duration_sym').astype('float32')
 
-mask_sym = T.matrix('mask_sym')
+mask_sym = T.matrix('mask_sym').astype('float32')
 
 #dummy data to test implementation - We advise to check the output-dimensions of all layers.
 #One way to do this in lasagne/theano is to forward pass some data through the model and 
 #check the output dimensions of these.
 #Create some random testdata for pitch input
-X_pitch = np.zeros((BATCH_SIZE, MAX_SEQ_LEN, NUM_FEATURES_pitch)).astype('int32')
+X_pitch = np.zeros((BATCH_SIZE, MAX_SEQ_LEN)).astype('float32')
 for i in range(BATCH_SIZE):
 	for j in range(MAX_SEQ_LEN):
-		k = (i*MAX_SEQ_LEN + j) % NUM_FEATURES_pitch
-		X_pitch[i,j,k] = 1
+		k = (i*MAX_SEQ_LEN + j) % 50
+		X_pitch[i,j] = k
 
-X_pitch = X_pitch.astype('int32')
+X_pitch = X_pitch.astype('float32')
 print(np.shape(X_pitch))
 X_mask = np.ones((BATCH_SIZE,MAX_SEQ_LEN)).astype('float32')
 print(np.shape(X_mask))
 
-X_duration = np.zeros((BATCH_SIZE, MAX_SEQ_LEN, NUM_FEATURES_duration)).astype('int32')
+X_duration = np.zeros((BATCH_SIZE, MAX_SEQ_LEN)).astype('float32')
 for i in range(BATCH_SIZE):
 	for j in range(MAX_SEQ_LEN):
-		k = (i*MAX_SEQ_LEN + j) % NUM_FEATURES_duration
-		X_duration[i,j,k] = 1
+		k = (i*MAX_SEQ_LEN + j) % 50
+		X_duration[i,j] = k
 
-X_duration = X_duration.astype('int32')
+X_duration = X_duration.astype('float32')
 print(np.shape(X_duration))
 
 
@@ -98,8 +98,8 @@ print(np.shape(X_duration))
 # Skip this One-hot-encoding step as the input data is already OHE like: input_pitch = (BATCH_SIZE, MAX_SEQ_LEN, NUM_PITCHES) and input_duration = (BATCH_SIZE, MAX_SEQ_LEN, NUM_DURATIONS) 
 #l_in = lasagne.layers.InputLayer((None, None, NUM_FEATURES))
 
-l_in_pitch = lasagne.layers.InputLayer((None, None, NUM_FEATURES_pitch), name="l_in_pitch")
-l_in_duration = lasagne.layers.InputLayer((None, None, NUM_FEATURES_duration), name="l_in_duration")
+l_in_pitch = lasagne.layers.InputLayer((None, MAX_SEQ_LEN), name="l_in_pitch")
+l_in_duration = lasagne.layers.InputLayer((None, MAX_SEQ_LEN), name="l_in_duration")
 
 #l_emb = lasagne.layers.EmbeddingLayer(l_in, NUM_INPUTS, NUM_INPUTS, W=np.eye(NUM_INPUTS,dtype='float32'), name='Embedding')
 #Here we'll remove the trainable parameters from the embeding layer to constrain 
@@ -133,21 +133,21 @@ print l_dec.name, ":", lasagne.layers.get_output(l_dec, inputs={l_in_pitch: x_pi
 # (batch_size, decode_len, num_dec_units) -> (batch_size*decodelen,num_dec_units). 
 # We need to do this since the softmax is applied to the last dimension and we want to 
 # softmax the output at each position individually
-l_reshape = lasagne.layers.ReshapeLayer(l_dec, (-1, [2]), name="l_reshape")
+l_reshape = lasagne.layers.ReshapeLayer(l_dec, (-1), name="l_reshape")
 print l_reshape.name, ":", lasagne.layers.get_output(l_reshape, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_mask_enc: mask_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration, mask_sym: X_mask}).shape
 
-l_softmax_pitch = lasagne.layers.DenseLayer(l_reshape, num_units=NUM_FEATURES_pitch, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_pitch')
-print l_softmax_pitch.name, ": ", lasagne.layers.get_output(l_softmax_pitch, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_mask_enc: mask_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration, mask_sym: X_mask}).shape
+l_linear_pitch = lasagne.layers.DenseLayer(l_reshape, num_units=1, nonlinearity=lasagne.nonlinearities.linear, name='LinearOutput_pitch')
+print l_linear_pitch.name, ": ", lasagne.layers.get_output(l_linear_pitch, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_mask_enc: mask_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration, mask_sym: X_mask}).shape
 
-l_softmax_duration = lasagne.layers.DenseLayer(l_reshape, num_units=NUM_FEATURES_duration, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_duration')
-print l_softmax_duration.name, ": ", lasagne.layers.get_output(l_softmax_duration, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_mask_enc: mask_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration, mask_sym: X_mask}).shape
+l_linear_duration = lasagne.layers.DenseLayer(l_reshape, num_units=1, nonlinearity=lasagne.nonlinearities.linear, name='linearOutput_duration')
+print l_linear_duration.name, ": ", lasagne.layers.get_output(l_linear_duration, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_mask_enc: mask_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration, mask_sym: X_mask}).shape
 
 # reshape back to 3d format (batch_size, decode_len, num_dec_units). Here we tied the batch size to the shape of the symbolic variable for X allowing 
 #us to use different batch sizes in the model.
-l_out_pitch = lasagne.layers.ReshapeLayer(l_softmax_pitch, (-1, MAX_SEQ_LEN, NUM_FEATURES_pitch), name="l_out_pitch")
+l_out_pitch = lasagne.layers.ReshapeLayer(l_linear_pitch, (-1, MAX_SEQ_LEN), name="l_out_pitch")
 print l_out_pitch.name, ":", lasagne.layers.get_output(l_out_pitch, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_mask_enc: mask_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration, mask_sym: X_mask}).shape
 
-l_out_duration = lasagne.layers.ReshapeLayer(l_softmax_duration, (-1, MAX_SEQ_LEN, NUM_FEATURES_duration), name="l_out_duration")
+l_out_duration = lasagne.layers.ReshapeLayer(l_linear_duration, (-1, MAX_SEQ_LEN), name="l_out_duration")
 print l_out_duration.name, ":", lasagne.layers.get_output(l_out_duration, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_mask_enc: mask_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration, mask_sym: X_mask}).shape
 
 ###END OF DECODER######
@@ -157,12 +157,14 @@ output_duration = lasagne.layers.get_output(l_out_duration, inputs={l_in_pitch: 
 #output_decoder_eval = lasagne.layers.get_output(l_out, inputs={l_in_pitch: x_pitch_sym, x_duration_sym,l_mask_enc: mask_sym}, deterministic=True)
 
 
-def evaluate(output, target, num_features, mask):
-	output_reshaped = T.reshape(output, (-1, num_features))
-	target_reshaped = T.reshape(target, (-1, num_features))
+def evaluate(linear_output, softmax_output, target, num_features, mask):
+	output_reshaped = T.reshape(output, (-1))
+	target_reshaped = T.reshape(target, (-1))
+	output_softmax_reshaped = # Some kind of binarization with T.round
 
 	#cost function
-	total_cost = T.nnet.categorical_crossentropy(output_reshaped
+	total_cost = #TODO: Insert mean squared error function from theano
+	(output_reshaped
 	    , target_reshaped)
 	flat_mask = mask.flatten(ndim=1)
 	N = T.dot(flat_mask, flat_mask)
@@ -245,7 +247,7 @@ print "x_duration_train", x_duration_train.shape
 print "y_duration_train", y_duration_train.shape
 #print "Yval", Yval.shape
 
-N_epochs = 5
+N_epochs = 1000
 
 print("Training model.")
 
@@ -298,41 +300,22 @@ for epoch in range(N_epochs):
 
 # Inspect model predictions for validation set examples:
 number_of_test_examples = 3
-#test_slice = slice(number_of_test_examples)
-test_cost_pitch, test_acc_pitch, test_output_pitch, test_cost_duration, test_acc_duration, test_output_duration = f_eval(x_pitch_test, y_pitch_test, x_duration_test, y_duration_test, mask_test)
+test_slice = slice(number_of_test_examples)
+test_cost_pitch, test_acc_pitch, test_output_pitch, test_cost_duration, test_acc_duration, test_output_duration = f_eval(x_pitch_valid[test_slice,:,:], y_pitch_valid[test_slice,:,:], x_duration_valid[test_slice,:,:], y_duration_valid[test_slice,:,:], mask_valid[test_slice,:])
 
 max_prob_pitch = np.argmax(test_output_pitch,axis=2)
 max_prob_duration = np.argmax(test_output_duration,axis=2)
-y_pitch_test_max = np.argmax(y_pitch_test,axis=2)
-y_duration_test_max = np.argmax(y_duration_test,axis=2)
-
-
-y_pitch_test_original = one_hot_decoder(test_output_pitch, map_ind2feat=data["map_ind2feat"])
+test_ind = np.nonzero(mask_valid[test_slice])
 
 print("Inspect the first {} melodies:".format(number_of_test_examples))
 for i in range(number_of_test_examples):
 	print("Pitch targets and prediction")
-	print(y_pitch_test_max[i])
 	print(max_prob_pitch[i])
+	print(data_pitch[i])
 
 	print("Duration targets and prediction")
-	print(y_duration_test_max[i])
 	print(max_prob_duration[i])
-
-
-with open(pkl_path + "train_output_pitch.pkl", "wb") as file:
-	pickle.dump(np.argmax(train_output_pitch, axis=2), file)
-
-with open(pkl_path + "train_output_duration.pkl", "wb") as file:
-	pickle.dump(np.argmax(train_output_duration, axis=2), file)
-
-with open(pkl_path + "valid_output_pitch.pkl", "wb") as file:
-	pickle.dump(np.argmax(valid_output_pitch, axis=2), file)
-
-with open(pkl_path + "valid_output_duration.pkl", "wb") as file:
-	pickle.dump(np.argmax(valid_output_duration, axis=2), file)
-
-
+	print(data_duration[i])
 
 # Accuracy plots
 # Pitch
