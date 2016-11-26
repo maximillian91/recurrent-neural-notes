@@ -27,7 +27,7 @@ class MusicModelGRU(object):
 		
 		# Model naming and data path
 		self.model_name = model_name
-		self.model_data_path = "../data/models/" + self.model_name
+		self.model_data_path = "../data/models/"
 
 		# Model hyperparameters
 		self.num_gru_layer_units = num_gru_layer_units
@@ -166,8 +166,8 @@ class MusicModelGRU(object):
 
 
 	def saveModel(self):
-		model_path = self.model_data_path + "_gru_{}_bs_{}_e_{}_".format(model1_name, self.num_gru_layer_units, self.batch_size, self.number_of_epochs_trained) + ".pkl"
-		print("Saving present model parameters, metadata and learning curves in {}".format())
+		model_path = self.model_data_path + self.model_name + "_gru_{}_bs_{}_e_{}".format(self.num_gru_layer_units, self.batch_size, self.number_of_epochs_trained) + ".pkl"
+		print("Saving present model parameters, metadata and learning curves in {}".format(model_path))
 		### SAVE model ###
 		model = {}
 
@@ -204,11 +204,15 @@ class MusicModelGRU(object):
 		model["vert_reset"] = self.vert_reset
 		model["vert_hidden"] = self.vert_hidden
 
-		with open(model_path + ".pkl", "wb") as file:
+		with open(model_path, "wb") as file:
 			pickle.dump(model, file)
 
-	def loadModel(self, model_path):
+	def loadModel(self, model_name):
 		### LOAD model ###
+		model_epochs = [int(file.split(".")[0].split("_")[-1]) for file in listdir(model_data_path) if (file[0] != "." and file.split(".")[-1] == "pkl")]
+		max_epoch_num = max(model_epochs)
+		
+		self.model_name = model_name
 		if os.path.isfile(model_path):
 			print("Setting up model with previous parameters from {}".format(model_path + ".pkl"))
 			with open(model_path + ".pkl", "rb") as file:
