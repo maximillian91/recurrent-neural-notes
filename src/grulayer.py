@@ -114,6 +114,7 @@ class GRUOutputInLayer(MergeLayer):
                  precompute_input=False, # TODO DELETE
                  mask_input=None, # TODO DELETE?
                  only_return_final=False,
+                 use_onehot_previous_output=True,
                  **kwargs):
 
         # This layer inherits from a MergeLayer, because it can have three
@@ -162,8 +163,15 @@ class GRUOutputInLayer(MergeLayer):
         print output_network.output_shape[-1]
         self.l_z_in = InputLayer((None, num_inputs))
         self.l_x_in = InputLayer((None, output_network.output_shape[-1]))
+
+        # Decide whether the previous_output from the output_network should: 
+        if use_onehot_previous_output: # Be onehot-encoded
+            l_x_onehot = OneHotLayer(self.l_x_in, output_network.output_shape[-1])
+            l_x = DenseLayer(l_x_onehot, num_inputs, W=init.GlorotUniform(), b=init.Constant(0.), nonlinearity=nonlinearities.rectify)
+        else: # or stay as the original output (e.g. softmax)
+            l_x = DenseLayer(self.l_x_in, num_inputs, W=init.GlorotUniform(), b=init.Constant(0.), nonlinearity=nonlinearities.rectify)
+        
         l_z = DenseLayer(self.l_z_in, num_inputs, W=init.GlorotUniform(), b=init.Constant(0.), nonlinearity=nonlinearities.rectify)
-        l_x = DenseLayer(self.l_x_in, num_inputs, W=init.GlorotUniform(), b=init.Constant(0.), nonlinearity=nonlinearities.rectify)
         self.l_zx = ReshapeLayer(ElemwiseSumLayer([l_z, l_x]), (-1, num_inputs))
         incomings.append(self.l_zx)
         self.params.update(l_z.params)
@@ -429,7 +437,18 @@ class RepeatLayer(lasagne.layers.Layer):
         dim = [1, 0] + range(2, input.ndim + 1)
         return stacked.dimshuffle(dim)
 
+class OneHotLayer(lasagne.layers.Layer):
+    """docstring for OneHotLayer"""
+    def __init__(self, incoming, num_features, **kwargs):
+        super(OneHotLayer, self).__init__(incoming, **kwargs)
+        self.num_features = num_features
+        
+    def get_output_for(self, input, **kwargs):
+        input_argmax = input.argmax(axis=1)
+        return T.eq(input_argmax.reshape((-1, 1)), T.arange(self.num_features))
 
+    def get_output_shape_for(self, input_shape):
+        return (input_shape[0], self.num_features)
 
 if __name__ == '__main__':
     NUM_UNITS_DEC = 30

@@ -1,5 +1,5 @@
 from data import load_data, array2midi, one_hot_decoder
-from aux import models_path
+from aux import _path
 from grulayer import GRUOutputInLayer
 import cPickle as pickle
 import os.path
@@ -29,25 +29,6 @@ class OneHotLayer(lasagne.layers.Layer):
 
 ####### RNN Model for folk music composition ########
 
-print(os.getcwd())
-
-model_name = "GRU_using_previous_output"
-
-# Defining model path
-#model_numbers = [int(file[-5]) for file in listdir("../data/models/") if file[:len(model_name)]==model_name]
-
-#if isempty(model_numbers):
-#	new_model_number = 0
-#else:
-#	new_model_number = max(model_numbers) + 1
-
-# try:
-# 	new_model_number = max(model_numbers.append(0)) + 1
-# except:
-# 	new_model_number = 0
-
-# model_number = "model_" + str(new_model_number)
-
 # Importing data
 data, _ = load_data(data_file="data_new", partition_file="partition", train_partition=0.8)
 
@@ -70,8 +51,11 @@ NUM_FEATURES_total = NUM_FEATURES_duration + NUM_FEATURES_pitch
 
 BATCH_SIZE = 10
 NUM_UNITS_GRU = 25
-N_epochs = 2
+N_epochs = 1000
 
+
+# Defining model path
+model_name = "GRU_using_previous_output"
 fig_path = "../models/fig/{}_gru_{}_bs_{}_e_{}_".format(model_name, NUM_UNITS_GRU, BATCH_SIZE, N_epochs) 
 data_path = "../data/models/{}_gru_{}_bs_{}_e_{}_".format(model_name, NUM_UNITS_GRU, BATCH_SIZE, N_epochs) 
 
@@ -89,80 +73,46 @@ y_duration_sym = T.itensor3('y_duration_sym')
 mask_sym = T.matrix('mask_sym')
 
 
-##### ENCODER START #####
-# Skip this One-hot-encoding step as the input data is already OHE like: input_pitch = (BATCH_SIZE, MAX_SEQ_LEN, NUM_PITCHES) and input_duration = (BATCH_SIZE, MAX_SEQ_LEN, NUM_DURATIONS) 
-#l_in = lasagne.layers.InputLayer((None, None, NUM_FEATURES))
-
+##### MODEL START #####
+# Two input layers receiving Onehot-encoded data
 l_in_pitch = lasagne.layers.InputLayer((None, None, NUM_FEATURES_pitch), name="l_in_pitch")
 l_in_duration = lasagne.layers.InputLayer((None, None, NUM_FEATURES_duration), name="l_in_duration")
 
-# No embedding
-#l_emb = lasagne.layers.EmbeddingLayer(l_in, NUM_INPUTS, NUM_INPUTS, W=np.eye(NUM_INPUTS,dtype='float32'), name='Embedding')
-#Here we'll remove the trainable parameters from the embeding layer to constrain 
-#it to a simple "one-hot-encoding". You can experiment with removing this line
-#l_emb.params[l_emb.W].remove('trainable') 
-
-
+# Layer merging the two input layers
 l_in_merge = lasagne.layers.ConcatLayer([l_in_pitch, l_in_duration], axis=2, name="l_in_merge")
 
-
-l_in_mask = lasagne.layers.InputLayer((None, MAX_SEQ_LEN), name="l_in_mask")
-
-##### END OF ENCODER ######
-
-
-##### START OF DECODER #####
-# l_dec = GRUOutputInLayer(l_gru, num_units=NUM_UNITS_DEC, name='GRUDecoder')
-# #print l_dec.name, ":", lasagne.layers.get_output(l_dec, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_in_mask: mask_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration, mask_sym: X_mask}).shape
-
-
-# We need to do some reshape voodo to connect a softmax layer to the decoder.
-# See http://lasagne.readthedocs.org/en/latest/modules/layers/recurrent.html#examples 
-# In short this line changes the shape from 
-# (batch_size, decode_len, num_dec_units) -> (batch_size*decodelen,num_dec_units). 
-# We need to do this since the softmax is applied to the last dimension and we want to 
-# softmax the output at each position individually
+# Simple input layer that the GRU layer can feed it's hidden states to
 l_out_in = lasagne.layers.InputLayer((None, NUM_UNITS_GRU), name="l_out_in")
 
-#l_reshape = lasagne.layers.ReshapeLayer(l_in_dec, (-1, [2]), name="l_reshape")
-
+# Two dense layers with softmax output (prediction probabilities)
 l_out_softmax_pitch = lasagne.layers.DenseLayer(l_out_in, num_units=NUM_FEATURES_pitch, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_pitch')
-
 l_out_softmax_duration = lasagne.layers.DenseLayer(l_out_in, num_units=NUM_FEATURES_duration, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_duration')
 
-# reshape back to 3d format (batch_size, decode_len, num_dec_units). Here we tied the batch size to the shape of the symbolic variable for X allowing 
-#us to use different batch sizes in the model.
-#l_out_pitch = lasagne.layers.ReshapeLayer(l_out_softmax_pitch, (-1, NUM_FEATURES_pitch), name="l_out_pitch")
-
-#l_out_duration = lasagne.layers.ReshapeLayer(l_out_softmax_duration, (-1, NUM_FEATURES_duration), name="l_out_duration")
-#output_pitch, output_duration = lasagne.layers.get_output([l_out_softmax_pitch, l_out_softmax_duration], inputs={l_out_in: z_gru_sym}, deterministic=False)
-
+# Homemade Layers for finding the one-encoded vector with max. probab 
 l_out_onehot_pitch = OneHotLayer(l_out_softmax_pitch, NUM_FEATURES_pitch)
 l_out_onehot_duration = OneHotLayer(l_out_softmax_duration, NUM_FEATURES_duration)
 
-l_out_merge = lasagne.layers.ConcatLayer([l_out_softmax_pitch, l_out_softmax_duration], axis=-1, name="l_out_merge")
+l_out_merge = lasagne.layers.ConcatLayer([l_out_onehot_pitch, l_out_onehot_duration], axis=-1, name="l_out_merge")
 
-###END OF DECODER######
+# The mask layer for ignoring time-steps after <eos> in the GRU layer
+l_in_mask = lasagne.layers.InputLayer((None, MAX_SEQ_LEN), name="l_in_mask")
 
-
-###### ENCODER ######
+# Main part of the model: 
+# The Gated-Recurrent-Unit (GRU) layer receiving both the original target at time t and the networks previous onehot-output from time t-1
 l_gru = GRUOutputInLayer(l_in_merge, l_out_merge, num_units=NUM_UNITS_GRU, name='GRULayer', mask_input=l_in_mask)
 
+# Slicing the output layer into softmax-encoded pitch and duration vectors
 l_out_pitch = lasagne.layers.SliceLayer(l_gru, indices=slice(NUM_FEATURES_pitch), axis=-1)
 
 l_out_duration = lasagne.layers.SliceLayer(l_gru, indices=slice(NUM_FEATURES_pitch, NUM_FEATURES_pitch + NUM_FEATURES_duration), axis=-1)
 
-## Outputs
+## Outputs from the network
 output_pitch = lasagne.layers.get_output(l_out_pitch, {l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_in_mask: mask_sym}, deterministic = False)
 output_duration = lasagne.layers.get_output(l_out_duration, {l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_in_mask: mask_sym}, deterministic = False)
 
 #output_pitch, output_duration = lasagne.layers.get_output([l_out_pitch, l_out_duration], inputs={l_in_dec: z_gru_sym}, deterministic=False)
 
-######## forward pass some data throug the inputlayer-embedding layer and print the output shape #########
-#dummy data to test implementation - We advise to check the output-dimensions of all layers.
-#One way to do this in lasagne/theano is to forward pass some data through the model and 
-#check the output dimensions of these.
-#Create some random testdata for pitch input
+#### forward pass some data throug the inputlayer-embedding layer and print the output shape ####
 X_pitch = np.zeros((BATCH_SIZE, MAX_SEQ_LEN, NUM_FEATURES_pitch)).astype('int32')
 for i in range(BATCH_SIZE):
 	for j in range(MAX_SEQ_LEN):
@@ -183,37 +133,16 @@ for i in range(BATCH_SIZE):
 X_duration = X_duration.astype('int32')
 print(np.shape(X_duration))
 
-
-# # Setting the silent output after masking
-# output_outside_mask_pitch = np.zeros((NUM_FEATURES_pitch)).astype("int32")
-# output_outside_mask_duration = np.zeros((NUM_FEATURES_duration)).astype("int32")
-# output_outside_mask_pitch[0] = 1
-# output_outside_mask_duration[0] = 1
-
-# output_outside_mask = lasagne.layers.get_output(l_in_merge, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration}).shape
-
 print l_in_pitch.name, ":", lasagne.layers.get_output(l_in_pitch, inputs={l_in_pitch: x_pitch_sym}).eval({x_pitch_sym: X_pitch}).shape
 
 print l_in_duration.name, ":", lasagne.layers.get_output(l_in_duration, inputs={l_in_duration: x_duration_sym}).eval({x_duration_sym: X_duration}).shape
 
 print l_in_merge.name, ":", lasagne.layers.get_output(l_in_merge, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration}).shape
 
-# out_gru = lasagne.layers.get_output(l_gru, inputs={l_in_pitch: x_pitch_sym, l_in_duration: x_duration_sym, l_in_mask: mask_sym}).eval({x_pitch_sym: X_pitch, x_duration_sym: X_duration, mask_sym: X_mask})
+### END OUTPUT TEST ###
 
-# print l_gru.name, ":", out_gru.shape
 
-# print l_out_in.name, ":", lasagne.layers.get_output(l_out_in, inputs={l_out_in: z_gru_sym}).eval({z_gru_sym: out_gru}).shape
-
-# # print l_reshape.name, ":", lasagne.layers.get_output(l_reshape, inputs={l_out_in: z_gru_sym}).eval({z_gru_sym: out_gru}).shape
-
-# print l_out_softmax_pitch.name, ":", lasagne.layers.get_output(l_out_softmax_pitch, inputs={l_out_in: z_gru_sym}).eval({z_gru_sym: out_gru}).shape
-
-# print l_out_softmax_duration.name, ":", lasagne.layers.get_output(l_out_softmax_duration, inputs={l_out_in: z_gru_sym}).eval({z_gru_sym: out_gru}).shape
-
-# print l_out_pitch.name, ":", lasagne.layers.get_output(l_out_pitch, inputs={l_out_in: z_gru_sym}).eval({z_gru_sym: out_gru}).shape
-
-# print l_out_duration.name, ":", lasagne.layers.get_output(l_out_duration, inputs={l_out_in: z_gru_sym}).eval({z_gru_sym: out_gru}).shape
-
+### Evalutation function returning cost and accuracy given predictions
 def evaluate(output, target, num_features, mask):
 	output_reshaped = T.reshape(output, (-1, num_features))
 	target_reshaped = T.reshape(target, (-1, num_features))
@@ -254,15 +183,14 @@ f_train = theano.function([x_pitch_sym, y_pitch_sym, x_duration_sym, y_duration_
 f_eval = theano.function([x_pitch_sym, y_pitch_sym, x_duration_sym, y_duration_sym, mask_sym], [cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration])
 
 
-### TRAINING ###
-#Collect data
+### COLLECT AND SPLIT DATA ###
 train_idx = data["train_idx"]
 valid_idx = data["valid_idx"]
 test_idx = data["test_idx"]
 input_mask = data["mask"]
 
 # Inputs
-x_pitch = data_pitch_ohe[:,:-1] 
+x_pitch = data_pitch_ohe[:,:-1]
 x_pitch_valid = x_pitch[valid_idx]
 x_pitch_train = x_pitch[train_idx]
 x_pitch_test = x_pitch[test_idx]
@@ -302,6 +230,9 @@ print "x_duration_train", x_duration_train.shape
 print "y_duration_train", y_duration_train.shape
 #print "Yval", Yval.shape
 
+
+
+### TRAINING ###
 print("Training model.")
 
 cost_train_pitch = []
@@ -312,6 +243,17 @@ cost_train_duration = []
 acc_train_duration = []
 cost_valid_duration = []
 acc_valid_duration = []
+
+# Compute norms over horizontal GRU weights
+horz_update = []
+horz_reset = []
+horz_hidden = []
+
+# Compute norms over vertical GRU weights
+vert_update = []
+vert_reset = []
+vert_hidden = []
+
 
 N_train = x_pitch_train.shape[0]
 
@@ -334,6 +276,16 @@ for epoch in range(N_epochs):
 	train_cost_pitch, train_acc_pitch, train_output_pitch, train_cost_duration, train_acc_duration, train_output_duration = f_eval(x_pitch_train, y_pitch_train, x_duration_train, y_duration_train, mask_train)
 	train_string = "Train: \t\t\t{:.4g}\t{:.4g}\t|\t\t{:.4g}\t{:.4g}".format(float(train_cost_pitch), float(train_cost_duration), float(train_acc_pitch), float(train_acc_duration))
 
+	# Compute norms over horizontal GRU weights
+	horz_update += [np.linalg.norm(l_gru.W_hid_to_updategate.get_value())]
+	horz_reset += [np.linalg.norm(l_gru.W_hid_to_resetgate.get_value())]
+	horz_hidden += [np.linalg.norm(l_gru.W_hid_to_hidden_update.get_value())]
+
+	# Compute norms over vertical GRU weights
+	vert_update += [np.linalg.norm(l_gru.W_in_to_updategate.get_value())]
+	vert_reset += [np.linalg.norm(l_gru.W_in_to_resetgate.get_value())]
+	vert_hidden += [np.linalg.norm(l_gru.W_in_to_hidden_update.get_value())]
+
 	cost_train_pitch += [train_cost_pitch]
 	acc_train_pitch += [train_acc_pitch]
 	cost_train_duration += [train_cost_duration]
@@ -350,41 +302,59 @@ for epoch in range(N_epochs):
 	epoch_string = "\nEpoch {:2d}: {}\n{}\n{}".format(epoch + 1, header_string, train_string, valid_string)
 	print(epoch_string)
 
-
-# Inspect model predictions for validation set examples:
-number_of_test_examples = 3
-#test_slice = slice(number_of_test_examples)
+# Model reconstructions on test data
 test_cost_pitch, test_acc_pitch, test_output_pitch, test_cost_duration, test_acc_duration, test_output_duration = f_eval(x_pitch_test, y_pitch_test, x_duration_test, y_duration_test, mask_test)
 
-max_prob_pitch_recon = np.argmax(test_output_pitch,axis=2)
-max_prob_duration_recon = np.argmax(test_output_duration,axis=2)
-max_prob_pitch_orig = np.argmax(y_pitch_test,axis=2)
-max_prob_duration_orig = np.argmax(y_duration_test,axis=2)
 
-# Convert 3 first examples to the original feature values:
-pitch_decoded_recon = one_hot_decoder(max_prob_pitch_recon[0:3], data["pitch"]["map_ind2feat"])
-duration_decoded_recon = one_hot_decoder(max_prob_duration_recon[0:3], data["duration"]["map_ind2feat"]) 
+### SAVE model ###
+model = {}
 
-pitch_decoded_orig = one_hot_decoder(max_prob_pitch_orig[0:3], data["pitch"]["map_ind2feat"])
-duration_decoded_orig = one_hot_decoder(max_prob_duration_orig[0:3], data["duration"]["map_ind2feat"]) 
+# Hyperparameters
+model["N_total"] = N_total
+model["MAX_SEQ_LEN"] = MAX_SEQ_LEN
+model["NUM_FEATURES_pitch"] = NUM_FEATURES_pitch
+model["NUM_FEATURES_duration"] = NUM_FEATURES_duration
+model["BATCH_SIZE"] = BATCH_SIZE
+model["NUM_UNITS_GRU"] = NUM_UNITS_GRU
+model["N_epochs"] = N_epochs
 
-# Write 3 first examples to midi files:
-array2midi(max_prob_pitch_recon[0:3], max_prob_duration_recon[0:3], data["metadata"][0:3], filepath=data_path, filename="recon")
-array2midi(max_prob_pitch_orig[0:3], max_prob_duration_orig[0:3], data["metadata"][0:3], filepath=data_path, filename="orig")
+# Parameters
+"encoder": get_all_param_values(self.encoder),
+"decoder": {
+    "p": get_all_param_values(self.decoder["p"]),
+    "log_r": get_all_param_values(self.decoder["log_r"])
+}
 
+# Reconstructions
+model["train_recon_pitch"] = np.argmax(train_output_pitch, axis=2)
+model["valid_recon_pitch"] = np.argmax(valid_output_pitch, axis=2)
+model["test_recon_pitch"] = np.argmax(test_output_pitch, axis=2)
 
+model["train_recon_duration"] = np.argmax(train_output_duration, axis=2)
+model["valid_recon_duration"] = np.argmax(valid_output_duration, axis=2)
+model["test_recon_duration"] = np.argmax(test_output_duration, axis=2)
 
-#y_pitch_test_original = one_hot_decoder(test_output_pitch, map_ind2feat=data["map_ind2feat"])
+# Costs
+model["cost_train_pitch"] = cost_train_pitch
+model["cost_valid_pitch"] = cost_valid_pitch
+model["cost_train_duration"] = cost_train_duration
+model["cost_valid_duration"] = cost_valid_duration
 
-print("Inspect the first {} melodies:".format(number_of_test_examples))
-for i in range(number_of_test_examples):
-	print("Pitch targets and prediction")
-	print(max_prob_pitch_orig[i])
-	print(max_prob_pitch_recon[i])
+# Accuracies
+model["acc_train_pitch"] = acc_train_pitch
+model["acc_valid_pitch"] = acc_valid_pitch
+model["acc_train_duration"] = acc_train_duration
+model["acc_valid_duration"] = acc_valid_duration
 
-	print("Duration targets and prediction")
-	print(max_prob_duration_orig[i])
-	print(max_prob_duration_recon[i])
+# Compute norms over horizontal GRU weights
+model["horz_update"] = horz_update
+model["horz_reset"] = horz_reset
+model["horz_hidden"] = horz_hidden
+
+# Compute norms over vertical GRU weights
+model["vert_update"] = vert_update
+model["vert_reset"] = vert_reset
+model["vert_hidden"] = vert_hidden
 
 
 with open(data_path + "train_output_pitch.pkl", "wb") as file:
@@ -398,90 +368,4 @@ with open(data_path + "valid_output_pitch.pkl", "wb") as file:
 
 with open(data_path + "valid_output_duration.pkl", "wb") as file:
 	pickle.dump(np.argmax(valid_output_duration, axis=2), file)
-
-
-
-# Accuracy plots
-# Pitch
-plt.figure()
-plt.plot(acc_train_pitch)
-plt.plot(acc_valid_pitch)
-plt.ylabel('Validation Accuracy (Pitch)', fontsize=15)
-plt.xlabel('Epoch #', fontsize=15)
-plt.title('', fontsize=20)
-plt.grid('on')
-plt.savefig(fig_path + "acc_pitch.png")
-
-plt.figure()
-plt.scatter(acc_train_pitch, acc_valid_pitch)
-#eq_line = range(max(acc_train_pitch, acc_valid_pitch))
-#plt.plot(eq_line)
-plt.ylabel('Accuracy Trajectory (Pitch)', fontsize=15)
-plt.xlabel('Epoch #', fontsize=15)
-plt.title('', fontsize=20)
-plt.grid('on')
-plt.savefig(fig_path + "acc_traj_pitch.png")
-
-## Duration 
-plt.figure()
-plt.plot(acc_train_duration)
-plt.plot(acc_valid_duration)
-plt.ylabel('Validation Accuracy (Duration)', fontsize=15)
-plt.xlabel('Epoch #', fontsize=15)
-plt.title('', fontsize=20)
-plt.grid('on')
-plt.savefig(fig_path + "acc_duration.png")
-
-plt.figure()
-plt.scatter(acc_train_duration, acc_valid_duration)
-#eq_line = range(max(acc_train_duration, acc_valid_duration))
-#plt.plot(eq_line)
-plt.ylabel('Validation Accuracy', fontsize=15)
-plt.xlabel('Training Accuracy', fontsize=15)
-plt.title('', fontsize=20)
-plt.grid('on')
-plt.savefig(fig_path + "acc_traj_duration.png")
-
-# Cost plots
-## Accuracy
-plt.figure()
-plt.plot(cost_train_pitch)
-plt.plot(cost_valid_pitch)
-plt.ylabel('Validation Accuracy (Pitch)', fontsize=15)
-plt.xlabel('Epoch #', fontsize=15)
-plt.title('', fontsize=20)
-plt.grid('on')
-plt.savefig(fig_path + "cost_pitch.png")
-
-plt.figure()
-plt.scatter(cost_train_pitch, cost_valid_pitch)
-#eq_line = range(max(cost_train_pitch, cost_valid_pitch))
-#plt.plot(eq_line)
-plt.ylabel('Accuracy Trajectory (Pitch)', fontsize=15)
-plt.xlabel('Epoch #', fontsize=15)
-plt.title('', fontsize=20)
-plt.grid('on')
-plt.savefig(fig_path + "cost_traj_pitch.png")
-
-## Duration
-plt.figure()
-plt.plot(cost_train_duration)
-plt.plot(cost_valid_duration)
-plt.ylabel('Validation Accuracy (Duration)', fontsize=15)
-plt.xlabel('Epoch #', fontsize=15)
-plt.title('', fontsize=20)
-plt.grid('on')
-plt.savefig(fig_path + "cost_duration.png")
-
-plt.figure()
-plt.scatter(cost_train_duration, cost_valid_duration)
-#eq_line = range(max(cost_train_duration, cost_valid_duration))
-#plt.plot(eq_line)
-plt.ylabel('Validation Accuracy', fontsize=15)
-plt.xlabel('Training Accuracy', fontsize=15)
-plt.title('', fontsize=20)
-plt.grid('on')
-plt.savefig(fig_path + "cost_traj_duration.png")
-
-
 

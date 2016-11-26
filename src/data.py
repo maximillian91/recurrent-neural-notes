@@ -302,6 +302,136 @@ def load_data(data_file="data", partition_file="partition", train_partition=0.8)
 
 	return data_ohe, data
 
+def analyze_results(result_file_path):
+	if os.path.isfile(result_file_path):
+		print("Collecting data from {}".format(result_file_path))
+		with open(result_file_path, "rb") as file:
+			results = pickle.load(file)
+	elif os.path.isfile("../models/" + result_file_path):
+		with open("../models/" + result_file_path, "rb") as file:
+			results = pickle.load(file)
+	else: 
+		print("No such result file exists!")
+		return "No such result file exists!"
+
+
+
+	max_prob_pitch_recon = np.argmax(test_output_pitch,axis=2)
+	max_prob_duration_recon = np.argmax(test_output_duration,axis=2)
+	max_prob_pitch_orig = np.argmax(y_pitch_test,axis=2)
+	max_prob_duration_orig = np.argmax(y_duration_test,axis=2)
+
+	# Convert 3 first examples to the original feature values:
+	pitch_decoded_recon = one_hot_decoder(max_prob_pitch_recon[0:3], data["pitch"]["map_ind2feat"])
+	duration_decoded_recon = one_hot_decoder(max_prob_duration_recon[0:3], data["duration"]["map_ind2feat"]) 
+
+	pitch_decoded_orig = one_hot_decoder(max_prob_pitch_orig[0:3], data["pitch"]["map_ind2feat"])
+	duration_decoded_orig = one_hot_decoder(max_prob_duration_orig[0:3], data["duration"]["map_ind2feat"]) 
+
+	# Write 3 first examples to midi files:
+	array2midi(pitch_decoded_recon, duration_decoded_recon, data["metadata"][0:3], filepath=data_path, filename="recon")
+	array2midi(pitch_decoded_orig, duration_decoded_orig, data["metadata"][0:3], filepath=data_path, filename="orig")
+
+
+
+	#y_pitch_test_original = one_hot_decoder(test_output_pitch, map_ind2feat=data["map_ind2feat"])
+
+	print("Inspect the first {} melodies:".format(number_of_test_examples))
+	for i in range(number_of_test_examples):
+		print("Pitch targets and prediction")
+		print(max_prob_pitch_orig[i])
+		print(max_prob_pitch_recon[i])
+
+		print("Duration targets and prediction")
+		print(max_prob_duration_orig[i])
+		print(max_prob_duration_recon[i])
+
+
+	# Accuracy plots
+	# Pitch
+	plt.figure()
+	acc_train_pitch_plt, = plt.plot(acc_train_pitch)
+	acc_valid_pitch_plt, = plt.plot(acc_valid_pitch)
+
+	plt.legend([acc_train_pitch_plt, acc_valid_pitch_plt], ['Training', 'Validation'])
+
+	plt.ylabel('Pitch Accuracy', fontsize=15)
+	plt.xlabel('Epoch #', fontsize=15)
+	plt.title('', fontsize=20)
+	plt.grid('on')
+	plt.savefig(fig_path + "acc_pitch.png")
+
+
+	## Duration 
+	plt.figure()
+	acc_train_duration_plt, = plt.plot(acc_train_duration)
+	acc_valid_duration_plt, = plt.plot(acc_valid_duration)
+
+	plt.legend([acc_train_duration_plt, acc_valid_duration_plt], ['Training', 'Validation'])
+
+	plt.ylabel('Duration Accuracy', fontsize=15)
+	plt.xlabel('Epoch #', fontsize=15)
+	plt.title('', fontsize=20)
+	plt.grid('on')
+	plt.savefig(fig_path + "acc_duration.png")
+
+
+	# Cost plots
+	## Accuracy
+	plt.figure()
+	cost_train_pitch_plt, = plt.plot(cost_train_pitch)
+	cost_valid_pitch_plt, = plt.plot(cost_valid_pitch)
+
+	plt.legend([cost_train_pitch_plt, cost_valid_pitch_plt], ['Training', 'Validation'])
+
+	plt.ylabel('Pitch Crossentropy Cost', fontsize=15)
+	plt.xlabel('Epoch #', fontsize=15)
+	plt.title('', fontsize=20)
+	plt.grid('on')
+	plt.savefig(fig_path + "cost_pitch.png")
+
+
+	## Duration
+	plt.figure()
+	cost_train_duration_plt, = plt.plot(cost_train_duration)
+	cost_valid_duration_plt, = plt.plot(cost_valid_duration)
+
+	plt.legend([cost_train_duration_plt, cost_valid_duration_plt], ['Training', 'Validation'])
+
+	plt.ylabel('Duration Crossentropy Cost', fontsize=15)
+	plt.xlabel('Epoch #', fontsize=15)
+	plt.title('', fontsize=20)
+	plt.grid('on')
+	plt.savefig(fig_path + "cost_duration.png")
+
+
+
+	# Plotting norms of weights
+	## Horizontal weights
+	plt.figure()
+	horz_update_plt, = plt.plot(horz_update)
+	horz_reset_plt, = plt.plot(horz_reset)
+	horz_hidden_plt, = plt.plot(horz_hidden)
+
+	plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ['Updategate', 'Resetgate', 'Hidden Updategate'])
+	plt.ylabel('Frobenius norm', fontsize=15)
+	plt.xlabel('Epoch #', fontsize=15)
+	plt.title('Horizontal GRU weights', fontsize=20)
+	plt.grid('on')
+	plt.savefig(fig_path + "horz_weight_norms.png")
+
+	## Vertical weights
+	plt.figure()
+	vert_update_plt, = plt.plot(vert_update)
+	vert_reset_plt, = plt.plot(vert_reset)
+	vert_hidden_plt, = plt.plot(vert_hidden)
+
+	plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ['Updategate', 'Resetgate', 'Hidden Updategate'])
+	plt.ylabel('Frobenius norm', fontsize=15)
+	plt.xlabel('Epoch #', fontsize=15)
+	plt.title('Vertical GRU weights', fontsize=20)
+	plt.grid('on')
+	plt.savefig(fig_path + "vert_weight_norms.png")
 
 def main():
 	# path for pickled data files:

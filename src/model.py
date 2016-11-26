@@ -15,26 +15,6 @@ seaborn.set(style='ticks', palette='Set2')
 
 ####### RNN Model for folk music composition ########
 
-print(os.getcwd())
-
-# Defining model path
-#model_numbering = [int(directory[-1]) for directory in listdir("../models/") if file[:6]=="model_"]
-
-#if isempty(model_numbering):
-#	new_model_number = 0
-#else:
-#	new_model_number = max(model_numbering) + 1
-
-new_model_number = 1
-
-model_dir = "model_" + str(new_model_number)
-
-fig_path = models_path("model_1/fig")
-fig_path += "/"
-
-pkl_path = "../models/model_1/pkl/"
-fig_path = "../models/model_1/fig/"
-
 # Importing data
 data, _ = load_data(data_file="data_1", partition_file="partition", train_partition=0.8)
 
@@ -58,6 +38,10 @@ NUM_FEATURES_total = NUM_FEATURES_duration + NUM_FEATURES_pitch
 BATCH_SIZE = 10
 NUM_UNITS_ENC = 25
 NUM_UNITS_DEC = 25
+
+# Defining model path
+model_name = "GRU_using_previous_output"
+
 
 
 #symbolic theano variables. Note that we are using imatrix for X since it goes into the embedding layer
@@ -258,6 +242,16 @@ acc_train_duration = []
 cost_valid_duration = []
 acc_valid_duration = []
 
+# Compute norms over horizontal GRU weights
+horz_update = []
+horz_reset = []
+horz_hidden = []
+
+# Compute norms over vertical GRU weights
+vert_update = []
+vert_reset = []
+vert_hidden = []
+
 N_train = x_pitch_train.shape[0]
 
 header_string = "Cost:\tPitch\tDuration| Acc:\tPitch\tDuration"
@@ -278,6 +272,16 @@ for epoch in range(N_epochs):
 		# epoch_cost += batch_cost
 	train_cost_pitch, train_acc_pitch, train_output_pitch, train_cost_duration, train_acc_duration, train_output_duration = f_eval(x_pitch_train, y_pitch_train, x_duration_train, y_duration_train, mask_train)
 	train_string = "Train: \t\t\t{:.4g}\t{:.4g}\t|\t\t{:.4g}\t{:.4g}".format(float(train_cost_pitch), float(train_cost_duration), float(train_acc_pitch), float(train_acc_duration))
+
+	# Compute norms over horizontal GRU weights
+	horz_update += [np.linalg.norm(l_gru.W_hid_to_updategate.get_value().all())]
+	horz_reset += [np.linalg.norm(l_gru.W_hid_to_resetgate.get_value().all())]
+	horz_hidden += [np.linalg.norm(l_gru.W_hid_to_hidden_update.get_value().all())]
+
+	# Compute norms over vertical GRU weights
+	vert_update += [np.linalg.norm(l_gru.W_in_to_updategate.get_value().all())]
+	vert_reset += [np.linalg.norm(l_gru.W_in_to_resetgate.get_value().all())]
+	vert_hidden += [np.linalg.norm(l_gru.W_in_to_hidden_update.get_value().all())]
 
 	cost_train_pitch += [train_cost_pitch]
 	acc_train_pitch += [train_acc_pitch]
