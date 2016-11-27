@@ -30,25 +30,35 @@ def main():
 
 	# Setting model hyperparameters 
 	BATCH_SIZE = 10
-	NUM_GRU_LAYER_UNITS = 25
-	NUM_EPOCHS = 2
+	NUM_GRU_LAYER_UNITS = 50
+	NUM_EPOCHS = 10
 	USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
 
 
 	###### MODELS ########
+	# model0_name = "Normal_GRU_Network"
+	# model0 = models.GRU_Network(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS)
+
+	# model0.train(train_data, valid_data, NUM_EPOCHS, BATCH_SIZE)
+
+	# model0.saveModel()
+
+
 	model1_name = "GRU_using_previous_output"
 	model1 = models.GRU_Network_Using_Previous_Output(model1_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT)
-
+	model1.load(model1_name)
 	model1.train(train_data, valid_data, NUM_EPOCHS, BATCH_SIZE)
 
-	model1.saveModel()
+	model1.save()
 
-	model2_name = "Normal_GRU_Network"
-	model2 = models.GRU_Network(model2_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS)
+	# model2_name = "GRU_using_nondeterministic_previous_output"
+	# model2 = models.GRU_Network_Using_Previous_Output(model2_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT)
+	# #model2.loadModel()
+	# model2.train(train_data, valid_data, NUM_EPOCHS, BATCH_SIZE)
 
-	model2.train(train_data, valid_data, NUM_EPOCHS, BATCH_SIZE)
+	# model2.saveModel()
 
-	model2.saveModel()
+
 
 
 	# Defining model path

@@ -76,7 +76,7 @@ class MusicModelGRU(object):
 		self.mask_sym = T.matrix('mask_sym')
 		
 	
-	def train(self, train_data, valid_data=None, num_epochs=10, batch_size=10):
+	def train(self, train_data, valid_data=None, num_epochs=10, batch_size=None):
 		# This generative model takes in the: 
 			# original data: x = {"pitch": x_pitch, "duration: x_duration, "mask": x_mask] (a list of 3 numpy arrays) with dimensions:
 				# dim(x_pitch) = (N, max_seq_len, num_features_pitch)
@@ -85,7 +85,9 @@ class MusicModelGRU(object):
 			# The original data is reformed into: 
 				# input: x_inpu = [x_{0}, ..., x_{max_seq_len-1}] with dim(x)=(N, max_seq_len-1, num_features)
 				# target: y = [x_{1}, ..., x_{max_seq_len}] with dim(y)=(N, max_seq_len-1, num_features) - this is one-step-ahead target that the model will predict.
-		
+		if batch_size is not None:
+			self.batch_size = batch_size
+
 
 		### COLLECT AND SPLIT DATA ###
 		print("Reforming data into inputs (x) and targets (y):")
@@ -102,11 +104,11 @@ class MusicModelGRU(object):
 
 		header_string = "Cost:\tPitch\tDuration| Acc:\tPitch\tDuration"
 		valid_string = ""
-		for epoch in range(num_epochs):
+		for epoch in range(self.number_of_epochs_trained, self.number_of_epochs_trained + num_epochs):
 			shuffled_indices = np.random.permutation(N_train)
-			for i in range(0, N_train, batch_size):
+			for i in range(0, N_train, self.batch_size):
 				# Collect random batch 
-				subset = shuffled_indices[i:(i + batch_size)]
+				subset = shuffled_indices[i:(i + self.batch_size)]
 				x_pitch_batch = x_pitch_train[subset]
 				y_pitch_batch = y_pitch_train[subset]
 				x_duration_batch = x_duration_train[subset]
@@ -146,10 +148,9 @@ class MusicModelGRU(object):
 
 		# Update the number of epochs the model have been trained for
 		self.number_of_epochs_trained += num_epochs
-		self.batch_size = batch_size
 
 
-	def evaluateModel(self, eval_data):
+	def evaluate(self, data):
 		# Model reconstructions on the given evaluation data:
 			# original data: x = {"pitch": x_pitch, "duration: x_duration, "mask": x_mask] (a list of 3 numpy arrays) with dimensions:
 				# dim(x_pitch) = (N, max_seq_len, num_features_pitch)
@@ -158,14 +159,14 @@ class MusicModelGRU(object):
 			# The original data is reformed into: 
 				# input: x_inpu = [x_{0}, ..., x_{max_seq_len-1}] with dim(x)=(N, max_seq_len-1, num_features)
 				# target: y = [x_{1}, ..., x_{max_seq_len}] with dim(y)=(N, max_seq_len-1, num_features) - this is one-step-ahead target that the model will predict.
-		x_pitch_eval, y_pitch_eval, x_duration_eval, y_duration_eval, mask_eval = data_setup(eval_data)	
+		x_pitch, y_pitch, x_duration, y_duration, mask_eval = data_setup(data)	
 
-		eval_cost_pitch, eval_acc_pitch, eval_output_pitch, eval_cost_duration, eval_acc_duration, eval_output_duration = self.f_eval(x_pitch_eval, y_pitch_eval, x_duration_eval, y_duration_eval, mask_eval)
+		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = self.f_eval(x_pitch_eval, y_pitch_eval, x_duration_eval, y_duration_eval, mask_eval)
 
-		return eval_cost_pitch, eval_acc_pitch, eval_output_pitch, eval_cost_duration, eval_acc_duration, eval_output_duration
+		return cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration
 
 
-	def saveModel(self):
+	def save(self):
 		model_path = self.model_data_path + self.model_name + "_gru_{}_bs_{}_e_{}".format(self.num_gru_layer_units, self.batch_size, self.number_of_epochs_trained) + ".pkl"
 		print("Saving present model parameters, metadata and learning curves in {}".format(model_path))
 		### SAVE model ###
@@ -177,6 +178,7 @@ class MusicModelGRU(object):
 		model["num_features_duration"] = self.num_features_duration
 		model["num_gru_layer_units"] = self.num_gru_layer_units
 		model["number_of_epochs_trained"] = self.number_of_epochs_trained
+		print("Saving number_of_epochs_trained = {}".format(self.number_of_epochs_trained))
 		model["use_deterministic_previous_output"] = self.use_deterministic_previous_output
 
 		# Parameters
@@ -207,51 +209,63 @@ class MusicModelGRU(object):
 		with open(model_path, "wb") as file:
 			pickle.dump(model, file)
 
-	def loadModel(self, model_name):
+	def load(self, model_name):
+		model_loaded = False
 		### LOAD model ###
-		model_epochs = [int(file.split(".")[0].split("_")[-1]) for file in listdir(model_data_path) if (file[0] != "." and file.split(".")[-1] == "pkl")]
-		max_epoch_num = max(model_epochs)
+		model_name_spec = model_name + "_gru_{}_bs_{}_e_".format(self.num_gru_layer_units, self.batch_size)
+		model_epochs = [int(file.split(".")[0].split("_")[-1]) for file in listdir(self.model_data_path) if (file[0] != "." and file[:len(model_name_spec)] == model_name_spec and file.split(".")[-1] == "pkl")]
 		
-		self.model_name = model_name
-		if os.path.isfile(model_path):
-			print("Setting up model with previous parameters from {}".format(model_path + ".pkl"))
-			with open(model_path + ".pkl", "rb") as file:
-				model = pickle.load(file)
-		else:
-			print("No model data in: {}".format(model_path))
+		# Check for latest model data
+		if model_epochs:
+			max_epoch_num = max(model_epochs)
+			print("The current number of epochs the {} model have been trained is: {}".format(model_name, max_epoch_num))
+			print("Loading the data for the current state of the model.")
+			model_path = self.model_data_path + model_name_spec + str(max_epoch_num) + ".pkl"
+			print("Will load {}".format(model_path))
+			if os.path.isfile(model_path):
+				self.model_name = model_name
+				with open(model_path, "rb") as file:
+					model = pickle.load(file)
+				model_loaded = True
+				print("Loaded {}".format(model_path))
+		else: 
+			print("No previous data on this model exists. Use the methods train() and save() first and then load().")
 
-		# Hyperparameters
-		self.max_seq_len = model["max_seq_len"]
-		self.num_features_pitch = model["num_features_pitch"]
-		self.num_features_duration = model["num_features_duration"]
-		self.num_gru_layer_units = model["num_gru_layer_units"]
-		self.number_of_epochs_trained = model["number_of_epochs_trained"]
-		self.use_deterministic_previous_output = model["use_deterministic_previous_output"]
+		if model_loaded:
+			print("Setting up model with previous parameters from the file {}".format(model_path))
 
-		# Parameters
-		set_all_param_values([self.l_out_pitch, self.l_out_duration], model["parameters"])
+			# Hyperparameters
+			self.max_seq_len = model["max_seq_len"]
+			self.num_features_pitch = model["num_features_pitch"]
+			self.num_features_duration = model["num_features_duration"]
+			self.num_gru_layer_units = model["num_gru_layer_units"]
+			self.number_of_epochs_trained = model["number_of_epochs_trained"]
+			self.use_deterministic_previous_output = model["use_deterministic_previous_output"]
 
-		# Costs
-		self.cost_train_pitch = model["cost_train_pitch"]
-		self.cost_valid_pitch = model["cost_valid_pitch"]
-		self.cost_train_duration = model["cost_train_duration"]
-		self.cost_valid_duration = model["cost_valid_duration"]
+			# Parameters
+			set_all_param_values([self.l_out_pitch, self.l_out_duration], model["parameters"])
 
-		# Accuracies
-		self.acc_train_pitch = model["acc_train_pitch"]
-		self.acc_valid_pitch = model["acc_valid_pitch"]
-		self.acc_train_duration = model["acc_train_duration"]
-		self.acc_valid_duration = model["acc_valid_duration"]
+			# Costs
+			self.cost_train_pitch = model["cost_train_pitch"]
+			self.cost_valid_pitch = model["cost_valid_pitch"]
+			self.cost_train_duration = model["cost_train_duration"]
+			self.cost_valid_duration = model["cost_valid_duration"]
 
-		# Compute norms over horizontal GRU weights
-		self.horz_update = model["horz_update"]
-		self.horz_reset = model["horz_reset"]
-		self.horz_hidden = model["horz_hidden"]
+			# Accuracies
+			self.acc_train_pitch = model["acc_train_pitch"]
+			self.acc_valid_pitch = model["acc_valid_pitch"]
+			self.acc_train_duration = model["acc_train_duration"]
+			self.acc_valid_duration = model["acc_valid_duration"]
 
-		# Compute norms over vertical GRU weights
-		self.vert_update = model["vert_update"]
-		self.vert_reset = model["vert_reset"]
-		self.vert_hidden = model["vert_hidden"]
+			# Compute norms over horizontal GRU weights
+			self.horz_update = model["horz_update"]
+			self.horz_reset = model["horz_reset"]
+			self.horz_hidden = model["horz_hidden"]
+
+			# Compute norms over vertical GRU weights
+			self.vert_update = model["vert_update"]
+			self.vert_reset = model["vert_reset"]
+			self.vert_hidden = model["vert_hidden"]
 
 class GRU_Network_Using_Previous_Output(MusicModelGRU):
 	"""docstring for GRU_Network_Using_Previous_Output"""
@@ -260,7 +274,7 @@ class GRU_Network_Using_Previous_Output(MusicModelGRU):
 		
 		# Model naming and data path
 		self.model_name = model_name
-		self.model_data_path = "../data/models/" + self.model_name
+		self.model_data_path = "../data/models/"
 
 		# Model hyperparameters
 		self.num_gru_layer_units = num_gru_layer_units

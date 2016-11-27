@@ -437,23 +437,47 @@ def main():
 	# path for pickled data files:
 	# pkl_path = "../data/pkl/"
 	# data_file_path = pkl_path + data_file + ".pkl"
+	model_data_path = "../data/models/"
+	model_name = "GRU_using_previous_output"
 
-	data_ohe, data = load_data(data_file="data_new", partition_file="partition", train_partition=0.8)
-	pitch_decoded = one_hot_decoder(data_ohe["pitch"]["indices"], data_ohe["pitch"]["map_ind2feat"])
-	duration_decoded = one_hot_decoder(data_ohe["duration"]["indices"], data_ohe["duration"]["map_ind2feat"])
-
-	array2midi(pitch_decoded[0:2], duration_decoded[0:2], data["metadata"], filename="original")
-	# print("Number of tunes in collection: {}".format(len(x_pitch)))
-	# print(len(x_pitch[data_slices["jigs"]]))
-	# #print(x_duration[data_slices["reels"]])
+	num_gru_layer_units, batch_size, number_of_epochs_trained = 50, 10, 10
+	model_loaded = False
+	### LOAD model ###
+	model_name_spec = model_name + "_gru_{}_bs_{}_e_{}".format(num_gru_layer_units, batch_size, number_of_epochs_trained)
+	model_epochs = [int(file.split(".")[0].split("_")[-1]) for file in listdir(model_data_path) if (file[0] != "." and file[:len(model_name_spec)] == model_name_spec and file.split(".")[-1] == "pkl")]
 	
-	# Printout Test of our one-hot-encoded (OHE) data structure 
-	for s in range(2):
-		print("\n{}. {}".format(s+1, data["metadata"][s]))
-		for i in range(2):
-			print("Note {}:".format(i+1))
-			print("\tPitch:\n\t\tdecoded={}\toriginal={}".format(pitch_decoded[s,i], data["pitch"][s][i]))
-			print("\tDuration:\n\t\tdecoded={}\toriginal={}".format(duration_decoded[s,i], data["duration"][s][i]))
+	# Check for latest model data
+	if model_epochs:
+		max_epoch_num = max(model_epochs)
+		print("The current number of epochs the {} model have been trained is: {}".format(model_name, max_epoch_num))
+		print("Loading the data for the current state of the model.")
+		model_path = model_data_path + model_name_spec + ".pkg"
+		if os.path.isfile(model_path):
+			model_name = model_name
+			print("Setting up model with previous parameters from the file {}".format(model_path))
+			with open(model_path, "rb") as file:
+				model = pickle.load(file)
+			model_loaded = True
+	else: 
+		print("No previous data on this model exists. Use the methods train() and save() first and then load().")
+
+
+	# data_ohe, data = load_data(data_file="data_new", partition_file="partition", train_partition=0.8)
+	# pitch_decoded = one_hot_decoder(data_ohe["pitch"]["indices"], data_ohe["pitch"]["map_ind2feat"])
+	# duration_decoded = one_hot_decoder(data_ohe["duration"]["indices"], data_ohe["duration"]["map_ind2feat"])
+
+	# array2midi(pitch_decoded[0:2], duration_decoded[0:2], data["metadata"], filename="original")
+	# # print("Number of tunes in collection: {}".format(len(x_pitch)))
+	# # print(len(x_pitch[data_slices["jigs"]]))
+	# # #print(x_duration[data_slices["reels"]])
+	
+	# # Printout Test of our one-hot-encoded (OHE) data structure 
+	# for s in range(2):
+	# 	print("\n{}. {}".format(s+1, data["metadata"][s]))
+	# 	for i in range(2):
+	# 		print("Note {}:".format(i+1))
+	# 		print("\tPitch:\n\t\tdecoded={}\toriginal={}".format(pitch_decoded[s,i], data["pitch"][s][i]))
+	# 		print("\tDuration:\n\t\tdecoded={}\toriginal={}".format(duration_decoded[s,i], data["duration"][s][i]))
 
 
 if __name__ == '__main__':
