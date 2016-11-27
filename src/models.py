@@ -219,7 +219,8 @@ class MusicModelGRU(object):
 		if model_epochs:
 			max_epoch_num = max(model_epochs)
 			print("The current number of epochs the {} model have been trained is: {}".format(model_name, max_epoch_num))
-			print("Loading the data for the current state of the model.")
+			print("Loading the data for the cu
+				rrent state of the model.")
 			model_path = self.model_data_path + model_name_spec + str(max_epoch_num) + ".pkl"
 			print("Will load {}".format(model_path))
 			if os.path.isfile(model_path):
