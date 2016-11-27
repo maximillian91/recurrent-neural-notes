@@ -199,10 +199,10 @@ def one_hot_decoder(examples_ind, map_ind2feat):
 			#example.append(np.nonzero(examples_ohe[i,j,:])[0].tolist())
 	return examples
 
-def array2midi(pitch, duration, metadata, filepath="../data/models/",filename="original"):
+def array2midi(pitch, pitch_map, duration, duration_map, metadata, indices, filepath="../data/models/", filename="original"):
 	# Convert numpy arrays to lists
-	#pitch_list = pitch.tolist()
-	#duration_list = duration.tolist()
+	pitch_decoded = one_hot_decoder(np.argmax(pitch, axis=2), pitch_map)
+	duration_decoded = one_hot_decoder(np.argmax(pitch, axis=2), duration_map)
 
 	# Convert lists to music21 stream
 	N, M = pitch.shape
@@ -210,18 +210,18 @@ def array2midi(pitch, duration, metadata, filepath="../data/models/",filename="o
 	for i in range(N):
 		melody = stream.Stream()
 		for j in range(M):
-			if pitch[i,j] < -1:
+			if pitch_decoded[i,j] < -1:
 				continue
-			elif pitch[i,j] == -1:
+			elif pitch_decoded[i,j] == -1:
 				n = note.Rest()
 			else: 
 				n = note.Note()
-				n.pitch.midi = pitch[i,j]
-			n.duration.quarterLength = duration[i,j]
+				n.pitch.midi = pitch_decoded[i,j]
+			n.duration.quarterLength = duration_decoded[i,j]
 			melody.append(n)
 		# Convert and save stream to midi file
 		mf = midi.translate.streamToMidiFile(melody)
-		mf.open(filepath + "melody_{}_{}".format(i, filename) + '.mid','wb')
+		mf.open(filepath + "melody_{}_{}".format(metadata[indices[i]][1][1], filename) + '.mid','wb')
 		mf.write()
 		mf.close()
 
@@ -437,32 +437,35 @@ def main():
 	# path for pickled data files:
 	# pkl_path = "../data/pkl/"
 	# data_file_path = pkl_path + data_file + ".pkl"
-	model_data_path = "../data/models/"
-	model_name = "GRU_using_previous_output"
+	# model_data_path = "../data/models/"
+	# model_name = "GRU_using_previous_output"
 
-	num_gru_layer_units, batch_size, number_of_epochs_trained = 50, 10, 10
-	model_loaded = False
-	### LOAD model ###
-	model_name_spec = model_name + "_gru_{}_bs_{}_e_{}".format(num_gru_layer_units, batch_size, number_of_epochs_trained)
-	model_epochs = [int(file.split(".")[0].split("_")[-1]) for file in listdir(model_data_path) if (file[0] != "." and file[:len(model_name_spec)] == model_name_spec and file.split(".")[-1] == "pkl")]
+	# num_gru_layer_units, batch_size, number_of_epochs_trained = 50, 10, 10
+	# model_loaded = False
+	# ### LOAD model ###
+	# model_name_spec = model_name + "_gru_{}_bs_{}_e_{}".format(num_gru_layer_units, batch_size, number_of_epochs_trained)
+	# model_epochs = [int(file.split(".")[0].split("_")[-1]) for file in listdir(model_data_path) if (file[0] != "." and file[:len(model_name_spec)] == model_name_spec and file.split(".")[-1] == "pkl")]
 	
-	# Check for latest model data
-	if model_epochs:
-		max_epoch_num = max(model_epochs)
-		print("The current number of epochs the {} model have been trained is: {}".format(model_name, max_epoch_num))
-		print("Loading the data for the current state of the model.")
-		model_path = model_data_path + model_name_spec + ".pkg"
-		if os.path.isfile(model_path):
-			model_name = model_name
-			print("Setting up model with previous parameters from the file {}".format(model_path))
-			with open(model_path, "rb") as file:
-				model = pickle.load(file)
-			model_loaded = True
-	else: 
-		print("No previous data on this model exists. Use the methods train() and save() first and then load().")
+	# # Check for latest model data
+	# if model_epochs:
+	# 	max_epoch_num = max(model_epochs)
+	# 	print("The current number of epochs the {} model have been trained is: {}".format(model_name, max_epoch_num))
+	# 	print("Loading the data for the current state of the model.")
+	# 	model_path = model_data_path + model_name_spec + ".pkg"
+	# 	if os.path.isfile(model_path):
+	# 		model_name = model_name
+	# 		print("Setting up model with previous parameters from the file {}".format(model_path))
+	# 		with open(model_path, "rb") as file:
+	# 			model = pickle.load(file)
+	# 		model_loaded = True
+	# else: 
+	# 	print("No previous data on this model exists. Use the methods train() and save() first and then load().")
 
 
-	# data_ohe, data = load_data(data_file="data_new", partition_file="partition", train_partition=0.8)
+	data_ohe, data = load_data(data_file="data_new", partition_file="partition", train_partition=0.8)
+
+	for i, metadata in enumerate(data["metadata"]):
+		print("{}. - {}".format(i, metadata[1][1]))
 	# pitch_decoded = one_hot_decoder(data_ohe["pitch"]["indices"], data_ohe["pitch"]["map_ind2feat"])
 	# duration_decoded = one_hot_decoder(data_ohe["duration"]["indices"], data_ohe["duration"]["map_ind2feat"])
 
