@@ -167,11 +167,11 @@ class GRUOutputInLayer(MergeLayer):
         # Decide whether the previous_output from the output_network should: 
         if use_onehot_previous_output: # Be onehot-encoded
             l_x_onehot = OneHotLayer(self.l_x_in, output_network.output_shape[-1])
-            l_x = DenseLayer(l_x_onehot, num_inputs, W=init.GlorotUniform(), b=init.Constant(0.), nonlinearity=nonlinearities.rectify)
+            l_x = DenseLayer(l_x_onehot, num_inputs, W=init.GlorotUniform(), b=init.Constant(0.), nonlinearity=nonlinearities.rectify, name="Previous_Onehot_Output_DenseLayer")
         else: # or stay as the original output (e.g. softmax)
-            l_x = DenseLayer(self.l_x_in, num_inputs, W=init.GlorotUniform(), b=init.Constant(0.), nonlinearity=nonlinearities.rectify)
+            l_x = DenseLayer(self.l_x_in, num_inputs, W=init.GlorotUniform(), b=init.Constant(0.), nonlinearity=nonlinearities.rectify, name="Previous_Softmax_Output_DenseLayer")
         
-        l_z = DenseLayer(self.l_z_in, num_inputs, W=init.GlorotUniform(), b=init.Constant(0.), nonlinearity=nonlinearities.rectify)
+        l_z = DenseLayer(self.l_z_in, num_inputs, W=init.GlorotUniform(), b=init.Constant(0.), nonlinearity=nonlinearities.rectify, name="Original_Input_DenseLayer")
         self.l_zx = ReshapeLayer(ElemwiseSumLayer([l_z, l_x]), (-1, num_inputs))
         incomings.append(self.l_zx)
         self.params.update(l_z.params)
@@ -344,7 +344,7 @@ class GRUOutputInLayer(MergeLayer):
             # hidden state; proceed normally for any input with mask 1.
             
             hid = T.switch(mask_n, hid, hid_previous)
-            out = T.switch(mask_n, out, input_n)
+            out = T.switch(mask_n, out, output_previous)
 
             return out, hid
 

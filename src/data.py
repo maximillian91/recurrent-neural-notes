@@ -6,6 +6,19 @@ import cPickle as pickle
 import os.path
 from os import listdir
 from music21 import converter, note, stream, duration, midi
+from PIL import Image, ImageDraw, ImageFont
+import matplotlib.pyplot as plt
+import seaborn
+seaborn.set(style='ticks', palette='Set2')
+seaborn.set_context("paper")
+
+
+def plotHeatMap(data_set, name):
+	figure = plt.figure()
+	axis = figure.add_subplot(1, 1, 1)
+	seaborn.heatmap(data_set.T, xticklabels = False, yticklabels = False, cbar = True, square = True, ax = axis)
+	figure_name = name + "_heatmap.png"
+	plt.savefig(figure_name)
 
 def save_data_from_abc_files(data_file="data"):	
 	# Data collection: For saving and returning the abc-data files in a dict of list of lists. 
@@ -154,7 +167,7 @@ def one_hot_encoder(examples):
 	feat2ind, ind2feat = unique_feature_set_mapping(examples)
 	NUM_FEATURES = len(feat2ind)
 	eos_value = examples[0][-1]
-
+	print("<eos> value: {}".format(eos_value))
 
 
 	# One-hot-encoding step which returns 3D numpy arrays of dimensions:
@@ -170,26 +183,27 @@ def one_hot_encoder(examples):
 				t = eos_value
 			else:
 				t = examples[i][j]
+				examples_mask[i,j] = 1.0
 			examples_ohe[i,j,feat2ind[t]] = 1
-			examples_mask[i,j] = 1
 			examples_ind[i,j] = feat2ind[t]
 			examples_pad[i,j] = t
 		# examples_mask[i,len(x)-1] = 0
 	return examples_ohe, examples_pad, examples_ind, examples_mask, feat2ind, ind2feat
 
-def one_hot_decoder(examples_ind, map_ind2feat):
+def one_hot_decoder(examples_encoded, map_ind2feat):
 	# Examples are not one-hot-encoded, but passed after argmax
 	# map_ind2feat is the dictionary mapping from argmax-index to the original feature value.
-	examples_shape = np.shape(examples_ind)
-	N_total = examples_shape[0]
-	MAX_SEQ_LEN = examples_shape[1]
-	#NUM_FEATURES = examples_shape[2]
+	examples_shape = examples_encoded.shape
+	print(len(examples_shape))
+	if len(examples_shape) < 3:
+		N_total = 1
+		MAX_SEQ_LEN = examples_shape[0]
+	else:
+		N_total = examples_shape[0]
+		MAX_SEQ_LEN = examples_shape[1]
 
-	# Outcommented 
-	#examples_flattened = examples_ohe.flatten() 
-	#examples_nonzero = np.nonzero(examples_flattened)[0]
-	#examples_feat_ind = np.mod(examples_nonzero,NUM_FEATURES).reshape(N_total, MAX_SEQ_LEN)
-
+	examples_encoded = examples_encoded.reshape((N_total, MAX_SEQ_LEN, -1))
+	examples_ind = np.argmax(examples_encoded, axis=-1)
 	examples = np.zeros((N_total, MAX_SEQ_LEN))
 
 	for i in range(N_total):
@@ -199,14 +213,14 @@ def one_hot_decoder(examples_ind, map_ind2feat):
 			#example.append(np.nonzero(examples_ohe[i,j,:])[0].tolist())
 	return examples
 
-def array2midi(pitch, pitch_map, duration, duration_map, metadata, indices, filepath="../data/models/", filename="original"):
-	# Convert numpy arrays to lists
-	pitch_decoded = one_hot_decoder(np.argmax(pitch, axis=2), pitch_map)
-	duration_decoded = one_hot_decoder(np.argmax(pitch, axis=2), duration_map)
+def array2streams(pitch, pitch_map, duration, duration_map):
+	# Convert numpy arrays to lists with original features
+	pitch_decoded = one_hot_decoder(pitch, pitch_map)
+	duration_decoded = one_hot_decoder(duration, duration_map)
 
 	# Convert lists to music21 stream
-	N, M = pitch.shape
-
+	N, M = pitch_decoded.shape
+	melodies = []
 	for i in range(N):
 		melody = stream.Stream()
 		for j in range(M):
@@ -219,11 +233,95 @@ def array2midi(pitch, pitch_map, duration, duration_map, metadata, indices, file
 				n.pitch.midi = pitch_decoded[i,j]
 			n.duration.quarterLength = duration_decoded[i,j]
 			melody.append(n)
-		# Convert and save stream to midi file
+		melodies.append(melody)
+	return melodies
+
+def array2midi(pitch, pitch_map, duration, duration_map, metadata, indices, filepath="../data/models/", filename="original"):
+	# Convert and save stream to midi file
+	melodies = array2streams(pitch, pitch_map, duration, duration_map)
+	for i, melody in enumerate(melodies):
 		mf = midi.translate.streamToMidiFile(melody)
 		mf.open(filepath + "melody_{}_{}".format(metadata[indices[i]][1][1], filename) + '.mid','wb')
 		mf.write()
 		mf.close()
+
+
+def plotActivations(name, activations, mask, pitch, pitch_map, duration, duration_map, metadata, indices):
+	melodies = array2streams(pitch, pitch_map, duration, duration_map)
+	#seaborn.set_style("ticks", {"xtick.major.size": 8, "ytick.major.size": 8})
+	seaborn.set(font_scale=0.5)
+	for i, melody in enumerate(melodies):
+		# figure = plt.figure(figsize=(8,6))
+		# axis = figure.add_subplot(1, 1, 1)
+		activations_trimmed = activations[i,(mask[i,:] > 0),:]
+		# column_labels = [x.pitch.name if x.isNote else "%" for x in melody.elements]
+		# #column_labels = [x.pitch.nameWithOctave + "\n" + str(x.duration.quarterLength) if x.isNote else "0" + "\n" + str(x.duration.quarterLength) for x in melody.elements]
+		# row_labels = [str(x) for x in range(activations_trimmed.shape[-1])]
+		# seaborn.heatmap(activations_trimmed.T, xticklabels = column_labels, yticklabels = True, cbar = True, square = True, ax = axis)
+
+		#labels
+		#column_labels = [x.pitch.nameWithOctave + "\n" + str(x.duration.quarterLength) if x.isNote else "0" + "\n" + str(x.duration.quarterLength) for x in melody.elements]
+
+		#axis.set_xticklabels(column_labels, minor=True)
+		#axis.set_yticklabels(row_labels, minor=True)
+		figure_name = name + "_" + metadata[indices[i]][1][1] + "_gruActivations"
+		# plt.savefig(figure_name + "_heatmap.png")
+		# plt.clf()
+
+		Stream2Img(figure_name, melody, activations_trimmed)
+
+
+
+
+def Stream2Img(name, stream, activations):
+	#activations = np.random.rand(len(streams), len(streams[0]))
+
+	MAX_SEQ_LEN, NUM_GRU = activations.shape
+
+	palette = seaborn.diverging_palette(240, 10, l=75, n=100)
+	activations_binned_idx = (activations*100).astype("int")
+
+	NOTES_PER_LINE = 16
+	row_pixel_start = 10
+	col_pixel_start = 10
+	newline_space = 5
+	# get a font
+	fnt = ImageFont.truetype('System/Library/Fonts/Menlo.ttc', 12)
+
+	for gru in range(NUM_GRU):
+		txt = Image.new('RGBA', (600,500), (255,255,255,0))
+		# get a drawing context
+		d = ImageDraw.Draw(txt)
+		string_width, string_height = d.textsize("CCCCC", font=fnt)
+		row_pixel = row_pixel_start
+		for j, note in enumerate(stream):
+			if note.isNote:
+				pitch_string = "{:^5}".format(note.pitch.nameWithOctave)
+			else:
+				pitch_string = "  %  "
+			if note.duration.quarterLength < 4:
+			    duration_string = " 1/{:<2.0f}".format(4/note.duration.quarterLength)
+			elif note.duration.quarterLength == 8.0:
+			    duration_string = " 2/1 "
+			elif note.duration.quarterLength == 6.0:
+			    duration_string = " 3/2 "
+			else:
+			    duration_string = note.duration.quarterLength
+			col_pixel = col_pixel_start + (j%NOTES_PER_LINE)*string_width
+
+			color = tuple([int(255*p) for p in palette[activations_binned_idx[j,gru]].tolist()])
+			d.rectangle([col_pixel, row_pixel, col_pixel+string_width, row_pixel+(2*string_height + 5)], fill=color)
+			d.text((col_pixel, row_pixel), pitch_string, font=fnt, fill=(1,1,1,255))
+			# draw text, full opacity
+			d.text((col_pixel, row_pixel+15), duration_string, font=fnt, fill=(1,1,1,255))
+
+			if (j+1) % NOTES_PER_LINE == 0:
+				# draw text, half opacity
+				row_pixel += (2*string_height + 15 + newline_space)
+		txt.save(name + "_gru#" + str(gru+1) + ".png")
+
+
+
 
 def save_partitioning(data=None, data_file="data", partition_file="partition", train_partition=0.8):
  	# path for pickled files:
@@ -464,8 +562,16 @@ def main():
 
 	data_ohe, data = load_data(data_file="data_new", partition_file="partition", train_partition=0.8)
 
-	for i, metadata in enumerate(data["metadata"]):
-		print("{}. - {}".format(i, metadata[1][1]))
+	# for i, metadata in enumerate(data["metadata"]):
+	# 	print("{}. - {}".format(i, metadata[1][1]))
+
+	# pitch_decoded = one_hot_decoder(data_ohe["pitch"]["indices"], data_ohe["pitch"]["map_ind2feat"])
+	# duration_decoded = one_hot_decoder(data_ohe["duration"]["indices"], data_ohe["duration"]["map_ind2feat"])
+
+	streams = array2streams(data_ohe["pitch"]["encoded"][0,:,:], data_ohe["pitch"]["map_ind2feat"], data_ohe["duration"]["encoded"][0,:,:], data_ohe["duration"]["map_ind2feat"])
+
+	Stream2Img(streams)
+
 	# pitch_decoded = one_hot_decoder(data_ohe["pitch"]["indices"], data_ohe["pitch"]["map_ind2feat"])
 	# duration_decoded = one_hot_decoder(data_ohe["duration"]["indices"], data_ohe["duration"]["map_ind2feat"])
 
