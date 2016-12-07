@@ -1,0 +1,31 @@
+\section{Methods}
+\label{sec:method}
+
+\begin{description}
+	\item[Methods] Recurrent neural networks with gated recurrent units.
+	
+	\begin{description}
+		\item[Vanishing gradients] If a neurone is saturated (gradient of activation close to zero), after multiple multiplication in backpropagation, the gradients will vanish.
+		\item[Horizontal weights] How much information can propagate across the network from hidden state to hidden state.
+	\end{description}
+	
+	\item [Cost function] the sum of two categorical cross entropy functions.
+	
+	\item[Models] Two--three models (possibly with or without dropout):
+	
+	\begin{enumerate}
+		\item One forwards layer using input and previous hidden state.
+		\item One forwards layer using previous output as well as previous hidden state.
+		\item Possibly One forwards layer using input and previous hidden state as well as previous hidden state.
+	\end{enumerate}
+\end{description}
+
+\subsection*{EHR synopsis}
+
+To apply the Deepr model to the EHR data, we will be working with text preprocessing methods, like one-hot encoding and word-embedding, on irregular time-series of diagnosis codes converted into sentences with time intervals between hospital visits inserted as special words (e.g., “1--3m” for 1 to 3 months). Therefore this task is comparable to applying convolutional neural networks (CNNs) for natural language processing problems, looking for local patterns and summing these up to a global classification.
+
+The Doctor AI paper’s model is implemented using multi-hot encoding of all diagnoses and medications recorded at each hospital visit with a timestamp. A two-layer recurrent neural network (RNN) are used for predicting diagnoses given at and durations between future hospital visits. The predictive power of this model lies in its ability to connect diagnoses in long term patterns important to future diagnoses.
+
+We will investigate the possibilities of using dilated causal convolutions as a cross between the CNN and RNN methods for predicting future diagnoses. Google DeepMind use these convolutions for predicting future audio samples in speech synthesis with WaveNet.
+
+A. van den Oord et al.: “WaveNet: A Generative Model for Raw Audio”, September 2016.

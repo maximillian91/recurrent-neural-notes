@@ -1,0 +1,30 @@
+\section{conclusion}
+\label{sec:conclusion}
+
+\begin{description}
+	\item[This report] What we did and found out.
+	
+	\begin{itemize}
+		\item We get accuracies of 90 \% and above for both models.
+		\item No vanishing gradients in either model.
+		\item The models can recognise and reconstruct:
+		\begin{itemize}
+			\item the key of the tune,
+			\item conjunct motion (the pitch difference), and
+			\item rhythm motifs.
+		\end{itemize}
+		\item The models can generate music by itself.
+	\end{itemize}
+	
+	\item[Future work] What we want to do and find out.
+	
+	\begin{description}
+		\item[Continuous encoding] Since some pitches harmonises better together than others depending on the differences in pitch, each would be easier for the model to learn the connection.
+		\item[Chords] Knowing which chord is playing, some pitches would be more probable than others.
+		\item[Positions in measures] This would help with rhythm. Similar to line breaks in text, but stronger, since some notes ought to fall on certain beats.
+		\item[Collections] Separating the style from the music theory with a semi-supervised variational auto-encoder.
+		\item[Backwards GRU layer] To better learn what comes next, it helps knowing what comes after. To use a second independent guess when predicting.
+		\item[Regularisation] Prevent overfitting.
+		\item[Musical sound and notation] Combine them as with speech and text. Synthesise different instruments playing.
+	\end{description}
+\end{description}
