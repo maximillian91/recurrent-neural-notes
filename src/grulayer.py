@@ -408,7 +408,7 @@ class GRUOutputInLayer(MergeLayer):
                 hid_out = hid_out[:, ::-1]
                 x_out = x_out[:, ::-1]
 
-        return x_out #, hid_out
+        return x_out #,hid_out
 
 
 # TODO: Make a test of the GRU Layer in order to see whether it works sufficiently.

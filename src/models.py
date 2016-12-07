@@ -7,7 +7,7 @@ from os import listdir
 
 import lasagne
 from lasagne.layers import (
-    InputLayer, DenseLayer, GRULayer, ConcatLayer, SliceLayer, ReshapeLayer,
+    InputLayer, DenseLayer, GRULayer, ConcatLayer, SliceLayer, ReshapeLayer, DropoutLayer,
     get_output, get_all_params, get_all_param_values, set_all_param_values
 )
 
@@ -605,11 +605,12 @@ class MusicModelGRU(object):
 
 class GRU_Network_Using_Previous_Output(MusicModelGRU):
 	"""docstring for GRU_Network_Using_Previous_Output"""
-	def __init__(self, model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units=25, set_x_input_to_zero=False, use_deterministic_previous_output=True):
+	def __init__(self, model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units=25, set_x_input_to_zero=False, use_deterministic_previous_output=True, in_dropout_p=0.2):
 		super(GRU_Network_Using_Previous_Output, self).__init__(model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units, set_x_input_to_zero)
 		
 		self.use_deterministic_previous_output = use_deterministic_previous_output
-
+		self.in_dropout_p = in_dropout_p
+		self.out_dropout_p = out_dropout_p
 		##### THE LAYERS OF THE NEXT-STEP PREDICTION GRU NETWORK #####
 
 		### INPUT NETWORK ###
@@ -619,6 +620,12 @@ class GRU_Network_Using_Previous_Output(MusicModelGRU):
 
 		# Layer merging the two input layers
 		l_in_merge = ConcatLayer([l_in_pitch, l_in_duration], axis=2, name="l_in_merge")
+
+		l_in_intermediate = l_in_merge
+
+		if in_dropout_p > 0:
+			l_in_intermediate = DropoutLayer(l_in_intermediate, rescale=False, p=in_dropout_p, shared_axes=tuple([1,2]))
+
 		# The mask layer for ignoring time-steps after <eos> in the GRU layer
 		l_in_mask = InputLayer((None, self.max_seq_len), name="l_in_mask")
 
@@ -627,9 +634,14 @@ class GRU_Network_Using_Previous_Output(MusicModelGRU):
 		# Simple input layer that the GRU layer can feed it's hidden states to
 		l_out_in = InputLayer((None, self.num_gru_layer_units), name="l_out_in")
 
+		# l_out_intermediate = l_out_in
+		# if out_dropout_p > 0:
+		# 	l_out_intermediate = DropoutLayer(l_out_intermediate, rescale=False, p=out_dropout_p)
+
+
 		# Two dense layers with softmax output (prediction probabilities)
-		l_out_softmax_pitch = DenseLayer(l_out_in, num_units=self.num_features_pitch, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_pitch')
-		l_out_softmax_duration = DenseLayer(l_out_in, num_units=self.num_features_duration, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_duration')
+		l_out_softmax_pitch = DenseLayer(l_out_intermediate, num_units=self.num_features_pitch, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_pitch')
+		l_out_softmax_duration = DenseLayer(l_out_intermediate, num_units=self.num_features_duration, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_duration')
 
 		# A layer for merging the two one-hot-encoding layers, so the GRU layer can get this as output_network and feed the previous output into the next prediction step.
 		l_out_merge = ConcatLayer([l_out_softmax_pitch, l_out_softmax_duration], axis=-1, name="l_out_merge")
@@ -637,7 +649,7 @@ class GRU_Network_Using_Previous_Output(MusicModelGRU):
 		### GRU LAYER ###
 		# Main part of the model: 
 		# The Gated-Recurrent-Unit (GRU) layer receiving both the original target at time t and the networks previous onehot-output from time t-1
-		self.l_out_gru = GRUOutputInLayer(l_in_merge, l_out_merge, num_units=self.num_gru_layer_units, name='GRULayer', mask_input=l_in_mask, use_onehot_previous_output=self.use_deterministic_previous_output)
+		self.l_out_gru = GRUOutputInLayer(l_in_intermediate, l_out_merge, num_units=self.num_gru_layer_units, name='GRULayer', mask_input=l_in_mask, use_onehot_previous_output=self.use_deterministic_previous_output)
 
 		# Setting up the output-layers as softmax-encoded pitch and duration vectors from the dense layers.
 		# (OBS: This is bypassing the onehot layers, so we evaluate the model on the softmax-outputs directly)
@@ -648,14 +660,23 @@ class GRU_Network_Using_Previous_Output(MusicModelGRU):
 		### NETWORK OUTPUTS ###
 		# Setting up the output as softmax-encoded pitch and duration vectors from the dense softmax layers.
 		# (OBS: This is bypassing the onehot layers, so we evaluate the model on the softmax-outputs directly)
-		output_pitch = get_output(self.l_out_pitch, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
-		output_duration = get_output(self.l_out_duration, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
-		output_gru = get_output(self.l_out_gru, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
+		output_pitch_train = get_output(self.l_out_pitch, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
+		output_duration_train = get_output(self.l_out_duration, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
+
+		output_pitch_eval = get_output(self.l_out_pitch, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = True)
+		output_duration_eval = get_output(self.l_out_duration, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = True)
+
+		output_gru = get_output(self.l_out_gru, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = True)
 
 		# Compute costs
-		cost_pitch, acc_pitch = eval(output_pitch, self.y_pitch_sym, self.num_features_pitch, self.y_mask_sym)
-		cost_duration, acc_duration = eval(output_duration, self.y_duration_sym, self.num_features_duration, self.y_mask_sym)
-		total_cost = cost_pitch + cost_duration
+		# For indeterministic training 
+		cost_pitch_train, acc_pitch_train = eval(output_pitch_train, self.y_pitch_sym, self.num_features_pitch, self.y_mask_sym)
+		cost_duration_train, acc_duration_train = eval(output_duration_train, self.y_duration_sym, self.num_features_duration, self.y_mask_sym)
+		total_cost = cost_pitch_train + cost_duration_train
+
+		# and deterministic evaluation
+		cost_pitch_eval, acc_pitch_eval = eval(output_pitch_eval, self.y_pitch_sym, self.num_features_pitch, self.y_mask_sym)
+		cost_duration_eval, acc_duration_eval = eval(output_duration_eval, self.y_duration_sym, self.num_features_duration, self.y_mask_sym)
 
 		#Get parameters of both encoder and decoder
 		all_parameters = get_all_params([self.l_out_pitch, self.l_out_duration], trainable=True)
@@ -673,18 +694,22 @@ class GRU_Network_Using_Previous_Output(MusicModelGRU):
 		#Compile Theano functions.
 		updates = lasagne.updates.adam(all_grads, all_parameters, learning_rate=0.005)
 
-		self.f_train = theano.function([self.x_pitch_sym, self.y_pitch_sym, self.x_duration_sym, self.y_duration_sym, self.x_mask_sym, self.y_mask_sym], [cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration], updates=updates)
-		#since we don't have any stochasticity in the network we will just use the training graph without any updates given
-		self.f_eval = theano.function([self.x_pitch_sym, self.y_pitch_sym, self.x_duration_sym, self.y_duration_sym, self.x_mask_sym, self.y_mask_sym], [cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration])
+		self.f_train = theano.function([self.x_pitch_sym, self.y_pitch_sym, self.x_duration_sym, self.y_duration_sym, self.x_mask_sym, self.y_mask_sym], [cost_pitch_train, acc_pitch_train, output_pitch_train, cost_duration_train, acc_duration_train, output_duration_train], updates=updates)
+		
+		#since we have stochasticity in the network when dropout is used we will use the evaluation graph without any updates given and deterministic=True
+		self.f_eval = theano.function([self.x_pitch_sym, self.y_pitch_sym, self.x_duration_sym, self.y_duration_sym, self.x_mask_sym, self.y_mask_sym], [cost_pitch_eval, acc_pitch_eval, output_pitch_eval, cost_duration_eval, acc_duration_eval, output_duration_eval])
 
 		self.f_eval_gru = theano.function([self.x_pitch_sym, self.x_duration_sym, self.x_mask_sym], output_gru)
 
 
 class GRU_Network(MusicModelGRU):
 	"""docstring for GRU_Network"""
-	def __init__(self, model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units=25, set_x_input_to_zero=False):
+	def __init__(self, model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units=25, set_x_input_to_zero=False, in_dropout_p=0, out_dropout_p=0):
 		super(GRU_Network, self).__init__(model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units, set_x_input_to_zero)
 		
+		self.in_dropout_p = in_dropout_p
+		self.out_dropout_p = out_dropout_p
+
 		##### THE LAYERS OF THE NEXT-STEP PREDICTION GRU NETWORK #####
 
 		### INPUT NETWORK ###
@@ -694,13 +719,25 @@ class GRU_Network(MusicModelGRU):
 
 		# Layer merging the two input layers
 		l_in_merge = ConcatLayer([l_in_pitch, l_in_duration], axis=2, name="l_in_merge")
+
+		# Dropout in input network
+		l_in_intermediate = l_in_merge
+		if self.in_dropout_p > 0:
+			l_in_intermediate = DropoutLayer(l_in_intermediate, rescale=False, p=self.in_dropout_p, shared_axes=(1,2))
+
+
 		# The mask layer for ignoring time-steps after <eos> in the GRU layer
 		l_in_mask = InputLayer((None, self.max_seq_len), name="l_in_mask")
 
 
 		### OUTPUT NETWORK ###
 		# Simple input layer that the GRU layer can feed it's hidden states to
-		self.l_out_gru = GRULayer(l_in_merge, num_units=self.num_gru_layer_units, name='GRULayer', mask_input=l_in_mask)
+		self.l_out_gru = GRULayer(l_in_intermediate, num_units=self.num_gru_layer_units, name='GRULayer', mask_input=l_in_mask)
+
+		# Dropout in output network
+		l_out_intermediate = self.l_out_gru
+		if self.out_dropout_p > 0:
+			l_out_intermediate = DropoutLayer(l_out_intermediate, rescale=False, p=self.out_dropout_p)
 
 		# We need to do some reshape voodo to connect a softmax layer to the decoder.
 		# See http://lasagne.readthedocs.org/en/latest/modules/layers/recurrent.html#examples 
@@ -708,7 +745,7 @@ class GRU_Network(MusicModelGRU):
 		# (batch_size, decode_len, num_dec_units) -> (batch_size*decodelen,num_dec_units). 
 		# We need to do this since the softmax is applied to the last dimension and we want to 
 		# softmax the output at each position individually
-		l_out_reshape = ReshapeLayer(self.l_out_gru, (-1, [2]), name="l_out_reshape")
+		l_out_reshape = ReshapeLayer(l_out_intermediate, (-1, [2]), name="l_out_reshape")
 
 
 		# Setting up the output-layers as softmax-encoded pitch and duration vectors from the dense layers. (Two dense layers with softmax output, e.g. prediction probabilities for next note in melody)
@@ -723,14 +760,23 @@ class GRU_Network(MusicModelGRU):
 		### NETWORK OUTPUTS ###
 		# Setting up the output as softmax-encoded pitch and duration vectors from the dense softmax layers.
 		# (OBS: This is bypassing the onehot layers, so we evaluate the model on the softmax-outputs directly)
-		output_pitch = get_output(self.l_out_pitch, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
-		output_duration = get_output(self.l_out_duration, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
-		output_gru = get_output(self.l_out_gru, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
+		output_pitch_train = get_output(self.l_out_pitch, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
+		output_duration_train = get_output(self.l_out_duration, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
+
+		output_pitch_eval = get_output(self.l_out_pitch, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = True)
+		output_duration_eval = get_output(self.l_out_duration, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = True)
+
+		output_gru = get_output(self.l_out_gru, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = True)
 
 		# Compute costs
-		cost_pitch, acc_pitch = eval(output_pitch, self.y_pitch_sym, self.num_features_pitch, self.y_mask_sym)
-		cost_duration, acc_duration = eval(output_duration, self.y_duration_sym, self.num_features_duration, self.y_mask_sym)
-		total_cost = cost_pitch + cost_duration
+		# For indeterministic training 
+		cost_pitch_train, acc_pitch_train = eval(output_pitch_train, self.y_pitch_sym, self.num_features_pitch, self.y_mask_sym)
+		cost_duration_train, acc_duration_train = eval(output_duration_train, self.y_duration_sym, self.num_features_duration, self.y_mask_sym)
+		total_cost = cost_pitch_train + cost_duration_train
+
+		# and deterministic evaluation
+		cost_pitch_eval, acc_pitch_eval = eval(output_pitch_eval, self.y_pitch_sym, self.num_features_pitch, self.y_mask_sym)
+		cost_duration_eval, acc_duration_eval = eval(output_duration_eval, self.y_duration_sym, self.num_features_duration, self.y_mask_sym)
 
 		#Get parameters of both encoder and decoder
 		all_parameters = get_all_params([self.l_out_pitch, self.l_out_duration], trainable=True)
@@ -748,11 +794,13 @@ class GRU_Network(MusicModelGRU):
 		#Compile Theano functions.
 		updates = lasagne.updates.adam(all_grads, all_parameters, learning_rate=0.005)
 
-		self.f_train = theano.function([self.x_pitch_sym, self.y_pitch_sym, self.x_duration_sym, self.y_duration_sym, self.x_mask_sym, self.y_mask_sym], [cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration], updates=updates)
-		#since we don't have any stochasticity in the network we will just use the training graph without any updates given
-		self.f_eval = theano.function([self.x_pitch_sym, self.y_pitch_sym, self.x_duration_sym, self.y_duration_sym, self.x_mask_sym, self.y_mask_sym], [cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration])
+		self.f_train = theano.function([self.x_pitch_sym, self.y_pitch_sym, self.x_duration_sym, self.y_duration_sym, self.x_mask_sym, self.y_mask_sym], [cost_pitch_train, acc_pitch_train, output_pitch_train, cost_duration_train, acc_duration_train, output_duration_train], updates=updates)
+		
+		#since we have stochasticity in the network when dropout is used we will use the evaluation graph without any updates given and deterministic=True.
+		self.f_eval = theano.function([self.x_pitch_sym, self.y_pitch_sym, self.x_duration_sym, self.y_duration_sym, self.x_mask_sym, self.y_mask_sym], [cost_pitch_eval, acc_pitch_eval, output_pitch_eval, cost_duration_eval, acc_duration_eval, output_duration_eval])
 
 		self.f_eval_gru = theano.function([self.x_pitch_sym, self.x_duration_sym, self.x_mask_sym], output_gru)
+
 
 
 class GRU_Network_Continuous(MusicModelGRU):

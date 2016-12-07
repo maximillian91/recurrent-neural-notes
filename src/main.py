@@ -2,14 +2,14 @@ import numpy as np
 import models
 from data import load_data
 
-def load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data=None, song_data=None, data_pitch_map=None, data_duration_map=None, write2midi=False, plotLearningCurves=False):
+def load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data=None, song_data=None, data_pitch_map=None, data_duration_map=None, write2midi=False, plotLearningCurves=False, in_dropout_p=0.2, out_dropout_p=0.5):
 
 	if USE_DETERMINISTIC_PREVIUOS_OUTPUT is not None:
 		print("Setting up extended RNN model: {} with {} GRU".format(model_name, NUM_GRU_LAYER_UNITS))
-		model = models.GRU_Network_Using_Previous_Output(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, set_x_input_to_zero, USE_DETERMINISTIC_PREVIUOS_OUTPUT)
+		model = models.GRU_Network_Using_Previous_Output(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, set_x_input_to_zero, USE_DETERMINISTIC_PREVIUOS_OUTPUT,in_dropout_p)
 	else: 
 		print("Setting up normal RNN model: {} with {} GRU".format(model_name, NUM_GRU_LAYER_UNITS))
-		model = models.GRU_Network(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS)
+		model = models.GRU_Network(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, in_dropout_p, out_dropout_p)
 	# model.load(model0_name, 200)
 	model.load()
 	if NUM_EPOCHS > 0:
@@ -76,7 +76,7 @@ def main():
 	num_features_total = num_features_duration + num_features_pitch
 
 
-	NUM_GRU_LAYER_UNITS, BATCH_SIZE, NUM_EPOCHS = 25, 10, 200
+	NUM_GRU_LAYER_UNITS, BATCH_SIZE, NUM_EPOCHS = 25, 10, 20
 
 	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
 	# set_x_input_to_zero = False
@@ -97,18 +97,27 @@ def main():
 	# load_train_save_model(model6_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, False, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, True)
 
 	# Setup and train GRU_using_only_deterministic_previous_output model
-	USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
-	set_x_input_to_zero = False
-	model_name = "GRU_using_deterministic_previous_output"
-	for NUM_GRU_LAYER_UNITS in [10, 25, 50, 75, 100]:
-		load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves)
-
-
-	# NUM_GRU_LAYER_UNITS = 50
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = None
+	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
 	# set_x_input_to_zero = False
-	# model0_name = "Normal_GRU_Network_0"
-	# load_train_save_model(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves)
+	# model_name = "GRU_using_deterministic_previous_output"
+	# for NUM_GRU_LAYER_UNITS in [25, 50, 75, 100]:
+	# 	load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves)
+
+
+	in_dropout_p = 0.2
+	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
+	# set_x_input_to_zero = True
+	# model_name = "GRU_using_deterministic_previous_output"
+	# for NUM_GRU_LAYER_UNITS in [25, 50, 75, 100]:
+	# 	load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT,in_dropout_p, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves)
+
+	NUM_GRU_LAYER_UNITS = 50
+	USE_DETERMINISTIC_PREVIUOS_OUTPUT = None
+	set_x_input_to_zero = False
+	in_dropout_p = 0.2
+	out_dropout_p = 0.5
+	model0_name = "Normal_GRU_Network_with_Dropout"
+	load_train_save_model(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves, in_dropout_p, out_dropout_p)
 
 	# NUM_GRU_LAYER_UNITS = 50
 	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = None
