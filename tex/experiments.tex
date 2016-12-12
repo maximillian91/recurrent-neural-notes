@@ -1,17 +1,37 @@
 \section{Experiments}
 \label{sec:experiments}
 
-\begin{description}
-	\item [RNN] 10, 25, 50, 75, and 100 gated recurrent units.
-	\item [Training] 200 epochs.
-	\item [Learning curves] cost functions, accuracies, and some metric for weights.
-	\item[Activations] of GRUs for tunes.
-	\item[Evaluation] on test set as a table.
-	\item [Reconstructions] of test examples.
-\end{description}
+% \begin{description}
+% 	\item [RNN] 10, 25, 50, 75, and 100 gated recurrent units.
+% 	\item [Training] 200 epochs.
+% 	\item [Learning curves] cost functions, accuracies, and some metric for weights.
+% 	\item[Activations] of GRUs for tunes.
+% 	\item[Evaluation] on test set as a table.
+% 	\item [Reconstructions] of test examples.
+% \end{description}
+\subsection{Model setup}
 
-\subsection*{EHR synopsis}
+The experiments were run for the normal RNN model using only original input and the extended RNN model using the previous prediction step output as input. For regularization, 20\% dropout was applied right before the GRU layer in the input network and right af the GRU layer in output network respectively in both model architectures. 50\% dropout was also applied right after the GRU layer in the normal RNN, but not in the extended model, as the recursive call of output network cannot work with nondeterministic outputs. 
 
-We expect our model to be able to predict future diagnoses better than baseline methods like logistic regression and the frequency baseline test given in Doctor AI. At the same time, the model will learn to recognise specific patterns in the patient history that will enhance the models predictive power. These patterns can be investigated and used as important markers for doctors to analyse the patient history and whether later complications can be expected and avoided.
+The two models with and without dropout are tested for 10, 25, 50, 75, and 100 gated recurrent units, so scaling of performance can be investigated. 
 
-In the worst-case scenario, we are not successful in achieving the above.
+All are trained for 200 epochs, as a clear convergence in the performance measures were seen after 150 epochs of training. \\ \\
+\subsection{Performance measures}
+
+The performance measures are the prediction accuracy and the two categorical cross entropy measures over pitch and duration classes are recorded for each epoch and seen in the learning curves.
+
+Other measures used for model investigation are the mean, frobenius norm and positive value fractions over both the horizontal weights (hidden to hidden state) and vertical weights (input to hidden state), where the trend in the overall magnitude and sign of the weights are expected to be seen. \\ \\
+\subsection{Evaluation and reconstructions}
+
+After training, the models were evaluated on 2 test songs, handpicked out of the unseen test set. The notes in the original melody (input) are highlighted by colors corresponding to the GRU activations, so patterns, like scale and rhythmical motifs, leading to higher activation can be localized and the functionality of the GRU identified.
+
+To investigate the distribution of the pitch and duration classes, the frequencies of each class in the original data and the reconstructions of the full data set from each model are represented in a histogram.
+
+All reconstructions can be translated back to the \texttt{music21} format, written to a midi file, played, written as score and compared against the original melody.  
+
+
+% \subsection*{EHR synopsis}
+
+% We expect our model to be able to predict future diagnoses better than baseline methods like logistic regression and the frequency baseline test given in Doctor AI. At the same time, the model will learn to recognise specific patterns in the patient history that will enhance the models predictive power. These patterns can be investigated and used as important markers for doctors to analyse the patient history and whether later complications can be expected and avoided.
+
+% In the worst-case scenario, we are not successful in achieving the above.

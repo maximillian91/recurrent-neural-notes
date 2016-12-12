@@ -1,6 +1,10 @@
 import numpy as np 
 import models
-from data import load_data
+from data import load_data, dataStatsBarPlot
+import matplotlib.pyplot as plt
+import seaborn
+seaborn.set(style='ticks', palette='Set2')
+seaborn.set_context("paper")
 
 def load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data=None, song_data=None, data_pitch_map=None, data_duration_map=None, write2midi=False, plotLearningCurves=False, in_dropout_p=0.2, out_dropout_p=0.5):
 
@@ -28,6 +32,7 @@ def load_train_save_model(model_name, max_seq_len, num_features_pitch, num_featu
 		print("song_data accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
 		print(np.argmax(output_pitch,axis=2))
 
+	return model
 
 
 def main():
@@ -43,6 +48,8 @@ def main():
 	data_duration = data["duration"]["encoded"]
 	data_duration_map = data["duration"]["map_ind2feat"]
 	data_mask = data["mask"]
+	data_mask_y = data_mask[:,1:]
+
 	metadata = data_orig["metadata"]
 
 	train_idx = data["train_idx"]
@@ -58,6 +65,7 @@ def main():
 	train_data = {"pitch": data_pitch[train_idx], "duration": data_duration[train_idx], "mask": data_mask[train_idx], "metadata": metadata, "indices": train_idx}
 	valid_data = {"pitch": data_pitch[valid_idx], "duration": data_duration[valid_idx], "mask": data_mask[valid_idx], "metadata": metadata, "indices": valid_idx}
 	test_data = {"pitch": data_pitch[test_idx], "duration": data_duration[test_idx], "mask": data_mask[test_idx], "metadata": metadata, "indices": test_idx}
+	all_data = {"pitch": data_pitch, "duration": data_duration, "mask": data_mask, "metadata": metadata, "indices": np.arange(data_pitch.shape[0])}
 
 	# Evalute models on melody 202. Fiddle Hill Jig and not 706. Fred Roden's Reel
 	song_idx = np.array(song_number)
@@ -75,8 +83,25 @@ def main():
 	num_features_duration = np.shape(data_duration)[2]
 	num_features_total = num_features_duration + num_features_pitch
 
+	# figure handles for note-stat barplots
+	fig_pitch, ax_pitch = plt.subplots(figsize=(9,6))
+	fig_duration, ax_duration = plt.subplots(figsize=(6,6))
 
-	NUM_GRU_LAYER_UNITS, BATCH_SIZE, NUM_EPOCHS = 25, 10, 20
+ 	palette = seaborn.color_palette(palette='muted', n_colors=4, desat=None)
+	#palette = seaborn.diverging_palette(240, 10, l=75, n=2)
+
+	# TODO: DATA STATS - WORK IN PROGRESS - PERCENTAGES
+	# rects_pitch = dataStatsBarPlot(data_pitch, data_mask, data_pitch_map, is_pitch=True, ax=ax_pitch)
+	rects_duration = dataStatsBarPlot(data_duration, data_mask, data_duration_map, palette[0], is_pitch=False, ax=ax_duration)
+	fig_duration.canvas.draw()
+	# rects_pitch = dataStatsBarPlot(data_pitch, data_mask, data_pitch_map, is_pitch=True, ax=ax_pitch, rects=rects_pitch)
+	rects_pitch = dataStatsBarPlot(data_pitch, data_mask, data_pitch_map, palette[0], is_pitch=True, ax=ax_pitch)
+	fig_pitch.canvas.draw()
+
+
+
+
+	NUM_GRU_LAYER_UNITS, BATCH_SIZE, NUM_EPOCHS = 25, 10, 0
 
 	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
 	# set_x_input_to_zero = False
@@ -96,28 +121,58 @@ def main():
 	# model6_name = "GRU_using_previous_output_only_6"
 	# load_train_save_model(model6_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, False, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, True)
 
+	model_names = []
+	model_names.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100})
+	model_names.append({'name': 'Normal_GRU_Network', 'use_deterministic_output': None, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100})
+	model_names.append({'name': 'Normal_GRU_Network_with_Dropout', 'use_deterministic_output': None, 'zero_input': True, 'in_dropout_p': 0.2, 'out_dropout_p': 0.5, 'num_epochs': 0, 'num_gru': 100})
+
 	# Setup and train GRU_using_only_deterministic_previous_output model
 	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
-	# set_x_input_to_zero = False
-	# model_name = "GRU_using_deterministic_previous_output"
-	# for NUM_GRU_LAYER_UNITS in [25, 50, 75, 100]:
-	# 	load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves)
+	# set_x_input_to_zero = True
+	# in_dropout_p = 0.2
+	# NUM_EPOCHS = 0
+	#model_name = "GRU_using_only_deterministic_previous_output"
+	for i, model_name in enumerate(model_names):
+		model = load_train_save_model(model_name['name'], max_seq_len, num_features_pitch, num_features_duration, model_name['num_gru'], model_name['use_deterministic_output'], model_name['zero_input'], BATCH_SIZE, model_name['num_epochs'], train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves, model_name['in_dropout_p'], model_name['out_dropout_p'])
+
+		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(all_data, None, None, write2midi, data_pitch_map, data_duration_map, plotLearningCurves)
+
+		rects_duration = dataStatsBarPlot(output_duration, data_mask_y, data_duration_map, palette[1+i], is_pitch=False, ax=ax_duration, rects=rects_duration)
+		fig_duration.canvas.draw()
+		rects_pitch = dataStatsBarPlot(output_pitch, data_mask_y, data_pitch_map, palette[1+i], is_pitch=True, ax=ax_pitch, rects=rects_pitch)
+		fig_pitch.canvas.draw()
 
 
-	in_dropout_p = 0.2
+	legend_names = tuple(['original data'] + [mod['name'].replace('_',' ') + ' (#gru=' + str(mod['num_gru']) for mod in model_names])
+	bars_pitch = tuple([rect[0] for rect in rects_pitch])
+	bars_duration = tuple([rect[0] for rect in rects_duration])
+
+	ax_pitch.legend(bars_pitch, legend_names)
+	ax_duration.legend(bars_duration, legend_names)
+
+	plt.figure(fig_pitch.number)
+	plt.savefig("../data/" + "pitch_freq_barplot.png")
+	plt.figure(fig_duration.number)
+	plt.savefig("../data/" + "duration_freq_barplot.png")
+
+	# in_dropout_p = 0.2
 	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
 	# set_x_input_to_zero = True
 	# model_name = "GRU_using_deterministic_previous_output"
 	# for NUM_GRU_LAYER_UNITS in [25, 50, 75, 100]:
 	# 	load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT,in_dropout_p, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves)
 
-	NUM_GRU_LAYER_UNITS = 50
-	USE_DETERMINISTIC_PREVIUOS_OUTPUT = None
-	set_x_input_to_zero = False
-	in_dropout_p = 0.2
-	out_dropout_p = 0.5
-	model0_name = "Normal_GRU_Network_with_Dropout"
-	load_train_save_model(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves, in_dropout_p, out_dropout_p)
+	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = None
+	# set_x_input_to_zero = False
+	# in_dropout_p = 0.2
+	# out_dropout_p = 0.5
+	# model0_name = "Normal_GRU_Network_with_Dropout"
+	# NUM_EPOCHS = 160
+	# for NUM_GRU_LAYER_UNITS in [50]:
+	# 	model = load_train_save_model(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves, in_dropout_p, out_dropout_p)
+	# 	cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(all_data, None, None, False, data_pitch_map, data_duration_map, False)
+		# rects_pitch, bar_num_pitch, legends_pitch = dataStatsBarPlot(output_pitch, data_mask_y, data_pitch_map, is_pitch=True, ax_pitch, bar_num_pitch)
+		# rects_duration, bar_num_duration, legends_duration = dataStatsBarPlot(output_duration, data_mask_y, data_duration_map, is_pitch=False, ax_duration, bar_num_duration)
 
 	# NUM_GRU_LAYER_UNITS = 50
 	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = None

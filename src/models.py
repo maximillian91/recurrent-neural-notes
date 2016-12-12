@@ -605,12 +605,11 @@ class MusicModelGRU(object):
 
 class GRU_Network_Using_Previous_Output(MusicModelGRU):
 	"""docstring for GRU_Network_Using_Previous_Output"""
-	def __init__(self, model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units=25, set_x_input_to_zero=False, use_deterministic_previous_output=True, in_dropout_p=0.2):
+	def __init__(self, model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units=25, set_x_input_to_zero=False, use_deterministic_previous_output=True, in_dropout_p=0):
 		super(GRU_Network_Using_Previous_Output, self).__init__(model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units, set_x_input_to_zero)
 		
 		self.use_deterministic_previous_output = use_deterministic_previous_output
 		self.in_dropout_p = in_dropout_p
-		self.out_dropout_p = out_dropout_p
 		##### THE LAYERS OF THE NEXT-STEP PREDICTION GRU NETWORK #####
 
 		### INPUT NETWORK ###
@@ -640,8 +639,8 @@ class GRU_Network_Using_Previous_Output(MusicModelGRU):
 
 
 		# Two dense layers with softmax output (prediction probabilities)
-		l_out_softmax_pitch = DenseLayer(l_out_intermediate, num_units=self.num_features_pitch, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_pitch')
-		l_out_softmax_duration = DenseLayer(l_out_intermediate, num_units=self.num_features_duration, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_duration')
+		l_out_softmax_pitch = DenseLayer(l_out_in, num_units=self.num_features_pitch, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_pitch')
+		l_out_softmax_duration = DenseLayer(l_out_in, num_units=self.num_features_duration, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_duration')
 
 		# A layer for merging the two one-hot-encoding layers, so the GRU layer can get this as output_network and feed the previous output into the next prediction step.
 		l_out_merge = ConcatLayer([l_out_softmax_pitch, l_out_softmax_duration], axis=-1, name="l_out_merge")

@@ -178,8 +178,9 @@ def one_hot_encoder(examples):
 	examples_pad = eos_value*np.ones((N, MAX_SEQ_LEN)).astype("float32")
 
 	for i in range(N):
+		example_len = len(examples[i])
 		for j in range(MAX_SEQ_LEN):
-			if j >= len(examples[i]):
+			if j >= example_len:
 				t = eos_value
 			else:
 				t = examples[i][j]
@@ -389,14 +390,6 @@ def load_data(data_file="data", partition_file="partition", train_partition=0.8)
 	x_duration_ohe, x_duration, x_duration_ind, x_duration_mask, feat2ind_duration, ind2feat_duration = one_hot_encoder(data["duration"])
 
 
-	# TODO: DATA STATS - WORK IN PROGRESS
-	# feature_fractions = data_stats(x_pitch_ohe, x_pitch_mask)
-
-	# test_note = Note()
-	# for i in range(NUM_FEATURES-1):
-	# 	test_note.pitch.midi = ind2feat_map[i]
-	# 	feature_fractions
-
 	data_ohe = {}
 	data_ohe["train_idx"] = partition["train_idx"]
 	data_ohe["valid_idx"] = partition["valid_idx"]
@@ -409,15 +402,68 @@ def load_data(data_file="data", partition_file="partition", train_partition=0.8)
 
 	return data_ohe, data
 
-def data_stats(data_ohe, mask, ind2feat_map):
+def dataStatsBarPlot(data_ohe, mask, ind2feat_map, color, is_pitch=False, ax=None, rects=None):
+	if ax is None:
+		fig, ax = plt.subplots(figsize=(9,6))
+
+	if rects is None:
+		rects = tuple()
+		bar_num = 1.0
+	else:
+		bar_num = len(rects) + 1
+
+
 	NUM_FEATURES = data_ohe.shape[2]
+	np.delete(data_ohe, 0, 1)
+
 	flat_data = data_ohe.reshape((-1, NUM_FEATURES))
 	flat_mask = mask.flatten()
 
-	N = np.sum(flat_mask)
-	feature_fractions = np.dot(flat_mask, flat_data) / N
+	feat_count = np.dot(flat_mask, flat_data)
+	feat_fract = (feat_count / np.sum(feat_count)).astype('float32')
 
-	return feature_fractions
+	test_note = note.Note()
+	stats = []
+	labels = tuple()
+	fractions = tuple()
+	for i in range(NUM_FEATURES-1):
+		feat = ind2feat_map[i+1]
+		if is_pitch:
+			test_note.pitch.midi = feat
+			feat_string = test_note.pitch.nameWithOctave
+			feat_string = feat_string.replace('-', 'b')
+
+		else: 
+			if feat < 4:
+			    feat_string = "1/{:<.0f}".format(4/feat)
+			elif feat == 8.0:
+			    feat_string = "2/1"
+			elif feat == 6.0:
+			    feat_string = "3/2"
+			elif feat_string == 4.0:
+				feat_string == "1/1"
+			else:
+			    feat_string = str(feat)
+		stats += [(feat_string, feat_fract[i]*100)]
+		labels += (feat_string,)
+		fractions += (feat_fract[i],)
+
+	ind = np.arange(NUM_FEATURES-1)
+	total_width = 0.9 
+	new_width = total_width / bar_num
+	rects += (ax.bar(ind + new_width, fractions, total_width, color=color),)
+
+	for i, rect in enumerate(rects):
+		for j, child in enumerate(rect):
+			child.set_width(new_width)
+			child.set_x(j + i*new_width)
+
+	ax.set_ylabel('Frequency')
+	ax.set_title('')
+	ax.set_xticks(ind+(total_width)/2.0)
+	ax.set_xticklabels(labels)
+
+	return rects
 
 def main():
 	# path for pickled data files:
@@ -449,6 +495,14 @@ def main():
 
 
 	data_ohe, data = load_data(data_file="data_new", partition_file="partition", train_partition=0.8)
+
+
+	# TODO: DATA STATS - WORK IN PROGRESS - PERCENTAGES
+	# pitch_stats = data_stats('', data_ohe["pitch"]["encoded"], data_ohe["pitch"]["mask"], data_ohe["pitch"]["map_ind2feat"], True)
+	# duration_stats = data_stats('', data_ohe["duration"]["encoded"], data_ohe["duration"]["mask"], data_ohe["duration"]["map_ind2feat"], True)
+
+	# print "Pitch statistics:", pitch_stats
+	# print "Duration statistics:", duration_stats
 
 	# for i, metadata in enumerate(data["metadata"]):
 	# 	print("{}. - {}".format(i, metadata[1][1]))

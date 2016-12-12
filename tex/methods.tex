@@ -9,8 +9,23 @@
 		\item[Horizontal weights] How much information can propagate across the network from hidden state to hidden state.
 	\end{description}
 	
-	\item [Cost function] the sum of two categorical cross entropy functions.
-	
+	\subsection{The network output function}
+	The output function for the network is:
+	\begin{equation}
+		f(\vec{x})\order{t} = s\left(\vec{W} \vec{h}\order{t} + \vec{b}\right)%\frac{\eup^{\vec{h}\order{t}}}{\sum^K_{k=1}}
+	\end{equation}
+	where $s(x)$ is the softmax activation function, $\vec{h}\order{t}$ are the hidden GRU activations at time step $t$. 
+	\subsection{Cost function} 
+	The categorical cross entropy loss function for example $n$ is:
+	\begin{equation}
+		%L(\vec{x}\order{t}; \vec{f}) = \frac{1}{T}\sum^{T-1}_{t} \sum^{M}_{m} \left(x_{m}\order{t+1} \log f(\vec{x}\order{t}) + \log(1-f(\vec{x}\order{t})  \right)
+		L_n(\vec{p}, \vec{q}) = -\sum^{M}_{m} p_{n,m} \log (q_{n,m})
+	\end{equation}
+	summed over all $M$ classes, where $\vec{p}$ is the one-hot-encoded targets $\vec{x}\order{t+1}$ at timesteps $t\in\{1, T\}$. $\vec{q}=f(\vec{x}_n)$ is the softmax output from the network taking input $\vec{x}\order{t+1}$ at timesteps $t\in\{0, T-1\}$. Each timestep are treated as a seperate datapoints, so the targets and outputs are unrolled to a 2D $([N \times [T-1] \text{ by } M)$-array and the loss for each are averaged over, $n$, the first dimension.
+	% \begin{equation}
+	% 	\sum^{B}_{n}\sum^{(T-1)}_{t}\sum^{M}_{m} x_{n,m}\order{t+1} \log ( f(\vec{x})_{n,m}\order{t} ) 
+	% \end{equation}
+
 	\item[Models] Two--three models (possibly with or without dropout):
 	
 	\begin{enumerate}
