@@ -12,6 +12,10 @@ import seaborn
 seaborn.set(style='ticks', palette='Set2')
 seaborn.set_context("paper")
 
+def ensure_dir(f):
+    d = os.path.dirname(f)
+    if not os.path.exists(d):
+        os.makedirs(d)
 
 def plotHeatMap(data_set, name):
 	figure = plt.figure()
@@ -402,13 +406,13 @@ def load_data(data_file="data", partition_file="partition", train_partition=0.8)
 
 	return data_ohe, data
 
-def dataStatsBarPlot(data_ohe, mask, ind2feat_map, color, is_pitch=False, ax=None, rects=None):
+def dataStatsBarPlot(data_ohe, mask, ind2feat_map, palette, is_pitch=False, ax=None, rects=None):
 	if ax is None:
 		fig, ax = plt.subplots(figsize=(9,6))
 
 	if rects is None:
 		rects = tuple()
-		bar_num = 1.0
+		bar_num = 1
 	else:
 		bar_num = len(rects) + 1
 
@@ -451,7 +455,7 @@ def dataStatsBarPlot(data_ohe, mask, ind2feat_map, color, is_pitch=False, ax=Non
 	ind = np.arange(NUM_FEATURES-1)
 	total_width = 0.9 
 	new_width = total_width / bar_num
-	rects += (ax.bar(ind + new_width, fractions, total_width, color=color),)
+	rects += (ax.bar(ind + new_width, fractions, new_width, color=palette[bar_num-1]),)
 
 	for i, rect in enumerate(rects):
 		for j, child in enumerate(rect):
@@ -464,6 +468,11 @@ def dataStatsBarPlot(data_ohe, mask, ind2feat_map, color, is_pitch=False, ax=Non
 	ax.set_xticklabels(labels)
 
 	return rects
+
+def write2table(table_file, model_num, num_gru, dropout_p, pitch_cost, duration_cost, pitch_acc, duration_acc):
+	with open(table_file + '.tex', "a") as text_file:
+		text_file.write("& {} & {} & {} & {:.3g} & {:.3g} & {:.3g}\\% & {:.3g}\\% \\\\ \n".format(model_num, dropout_p, num_gru, float(pitch_cost), float(duration_cost), 100.0*float(pitch_acc), 100.0*float(duration_acc)))
+
 
 def main():
 	# path for pickled data files:

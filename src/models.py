@@ -363,20 +363,19 @@ class MusicModelGRU(object):
 		# Check for latest or the number_of_epochs_trained model data
 		if model_epochs:
 			max_epoch_num = max(model_epochs)
-			print("The current number of epochs the {} model have been trained is: {}".format(self.model_name, max_epoch_num))
-			print("Loading the data for the current state of the model.")
+			print("The current number of epochs the {} model have been trained is: {}\n".format(self.model_name, max_epoch_num))
+			print("Loading the data for the current state of the model.\n")
 			model_path = self.model_data_path + model_name_spec + str(max_epoch_num) + ".pkl"
-			print("Will load {}".format(model_path))
 			if os.path.isfile(model_path):
 				with open(model_path, "rb") as file:
 					model = pickle.load(file)
 				model_loaded = True
-				print("Loaded {}".format(model_path))
+				print("Loaded {}\n".format(model_path))
 		else: 
-			print("No previous data on this model exists. Use the methods train() and save() first and then load().")
+			print("No previous data on this model exists. Use the methods train() and save() first and then load().\n")
 
 		if model_loaded:
-			print("Setting up model with previous parameters from the file {}".format(model_path))
+			print("Setting up model with previous parameters from the file {}\n".format(model_path))
 
 			# Hyperparameters
 			self.max_seq_len = model["max_seq_len"]
@@ -451,10 +450,10 @@ class MusicModelGRU(object):
 		acc_valid_pitch_plt, = plt.plot(epochs, self.acc_valid_pitch, 'r--')
 		acc_train_duration_plt, = plt.plot(epochs, self.acc_train_duration, 'b-')
 		acc_valid_duration_plt, = plt.plot(epochs, self.acc_valid_duration, 'b--')
-		plt.ylabel('Accuracies', fontsize=15)
-		plt.xlabel('Epoch #', fontsize=15)
+		plt.ylabel('Accuracies')
+		plt.xlabel('Epoch #')
 		plt.legend([acc_train_pitch_plt, acc_valid_pitch_plt, acc_train_duration_plt, acc_valid_duration_plt], ["Training Pitch", "Validation Pitch", "Training Duration", "Validation Duration"])
-		plt.title('', fontsize=20)
+		#plt.title('', fontsize=20)
 		plt.grid('on')
 		plt.savefig(model_path + "_acc.png")
 
@@ -464,10 +463,10 @@ class MusicModelGRU(object):
 		cost_valid_pitch_plt, = plt.plot(epochs, self.cost_valid_pitch, 'r--')
 		cost_train_duration_plt, = plt.plot(epochs, self.cost_train_duration, 'b-')
 		cost_valid_duration_plt, = plt.plot(epochs, self.cost_valid_duration, 'b--')
-		plt.ylabel('Crossentropy Costs', fontsize=15)
-		plt.xlabel('Epoch #', fontsize=15)
+		plt.ylabel('Crossentropy Costs')
+		plt.xlabel('Epoch #')
 		plt.legend([cost_train_pitch_plt, cost_valid_pitch_plt, cost_train_duration_plt, cost_valid_duration_plt], ["Training Pitch", "Validation Pitch", "Training Duration", "Validation Duration"])
-		plt.title('', fontsize=20)
+		#plt.title('', fontsize=20)
 		plt.grid('on')
 		plt.savefig(model_path + "_cost.png")
 		
@@ -478,10 +477,10 @@ class MusicModelGRU(object):
 		horz_update_plt, = plt.plot(epochs, self.horz_update_mean)
 		horz_reset_plt, = plt.plot(epochs, self.horz_reset_mean)
 		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_mean)
-		plt.ylabel('Mean of Horizontal Weights', fontsize=15)
-		plt.xlabel('Epoch #', fontsize=15)
+		plt.ylabel('Mean of Horizontal Weights')
+		plt.xlabel('Epoch #')
 		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
-		plt.title('', fontsize=20)
+		#plt.title('', fontsize=20)
 		plt.grid('on')
 		plt.savefig(model_path + "_horzWeights_mean.png")
 
@@ -490,10 +489,10 @@ class MusicModelGRU(object):
 		vert_update_plt, = plt.plot(epochs, self.vert_update_mean)
 		vert_reset_plt, = plt.plot(epochs, self.vert_reset_mean)
 		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_mean)
-		plt.ylabel('Mean of Vertical Weights', fontsize=15)
-		plt.xlabel('Epoch #', fontsize=15)
+		plt.ylabel('Mean of Vertical Weights')
+		plt.xlabel('Epoch #')
 		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
-		plt.title('', fontsize=20)
+		#plt.title('', fontsize=20)
 		plt.grid('on')
 		plt.savefig(model_path + "_vertWeights_mean.png")
 
@@ -504,10 +503,10 @@ class MusicModelGRU(object):
 		horz_update_plt, = plt.plot(epochs, self.horz_update_norm)
 		horz_reset_plt, = plt.plot(epochs, self.horz_reset_norm)
 		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_norm)
-		plt.ylabel('Frobenius norm of Horizontal Weights', fontsize=15)
-		plt.xlabel('Epoch #', fontsize=15)
+		plt.ylabel('Frobenius norm of Horizontal Weights')
+		plt.xlabel('Epoch #')
 		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
-		plt.title('', fontsize=20)
+		#plt.title('', fontsize=20)
 		plt.grid('on')
 		plt.savefig(model_path + "_horzWeights_norm.png")
 
@@ -516,10 +515,10 @@ class MusicModelGRU(object):
 		vert_update_plt, = plt.plot(epochs, self.vert_update_norm)
 		vert_reset_plt, = plt.plot(epochs, self.vert_reset_norm)
 		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_norm)
-		plt.ylabel('Frobenius norm of Vertical Weights', fontsize=15)
-		plt.xlabel('Epoch #', fontsize=15)
+		plt.ylabel('Frobenius norm of Vertical Weights')
+		plt.xlabel('Epoch #')
 		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
-		plt.title('', fontsize=20)
+		#plt.title('', fontsize=20)
 		plt.grid('on')
 		plt.savefig(model_path + "_vertWeights_norm.png")
 
@@ -530,10 +529,10 @@ class MusicModelGRU(object):
 		horz_update_plt, = plt.plot(epochs, self.horz_update_pos)
 		horz_reset_plt, = plt.plot(epochs, self.horz_reset_pos)
 		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_pos)
-		plt.ylabel('Fraction of Positive values in Horizontal Weights', fontsize=15)
-		plt.xlabel('Epoch #', fontsize=15)
+		plt.ylabel('Fraction of Positive values in Horizontal Weights')
+		plt.xlabel('Epoch #')
 		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
-		plt.title('', fontsize=20)
+		#plt.title('', fontsize=20)
 		plt.grid('on')
 		plt.savefig(model_path + "_horzWeights_pos.png")
 
@@ -542,66 +541,14 @@ class MusicModelGRU(object):
 		vert_update_plt, = plt.plot(epochs, self.vert_update_pos)
 		vert_reset_plt, = plt.plot(epochs, self.vert_reset_pos)
 		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_pos)
-		plt.ylabel('Fraction of Positive values in Vertical Weights', fontsize=15)
-		plt.xlabel('Epoch #', fontsize=15)
+		plt.ylabel('Fraction of Positive values in Vertical Weights')
+		plt.xlabel('Epoch #')
 		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
-		plt.title('', fontsize=20)
+		#plt.title('', fontsize=20)
 		plt.grid('on')
 		plt.savefig(model_path + "_vertWeights_pos.png")
 
 		plt.close("all")
-
-		# # Horizontal weights plots
-		# plt.figure()
-		# horz_update_plt, = plt.plot(epochs, self.horz_update_neg)
-		# horz_reset_plt, = plt.plot(epochs, self.horz_reset_neg)
-		# horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_neg)
-		# plt.ylabel('Fraction of Negative values in Horizontal Weights', fontsize=15)
-		# plt.xlabel('Epoch #', fontsize=15)
-		# plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
-		# plt.title('', fontsize=20)
-		# plt.grid('on')
-		# plt.savefig(model_path + "_horzWeights_neg.png")
-
-		# # Vertical weights plots
-		# plt.figure()
-		# vert_update_plt, = plt.plot(epochs, self.vert_update_neg)
-		# vert_reset_plt, = plt.plot(epochs, self.vert_reset_neg)
-		# vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_neg)
-		# plt.ylabel('Fraction of Negative values in Vertical Weights', fontsize=15)
-		# plt.xlabel('Epoch #', fontsize=15)
-		# plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
-		# plt.title('', fontsize=20)
-		# plt.grid('on')
-		# plt.savefig(model_path + "_vertWeights_neg.png")
-
-		# plt.close("all")
-
-		# # Horizontal weights plots
-		# plt.figure()
-		# horz_update_plt, = plt.plot(epochs, [1.0-sum(x) for x in zip(self.horz_update_pos, self.horz_update_neg)])
-		# horz_reset_plt, = plt.plot(epochs, [1.0-sum(x) for x in zip(self.horz_reset_pos, self.horz_reset_neg)])
-		# horz_hidden_plt, = plt.plot(epochs, [1.0-sum(x) for x in zip(self.horz_hidden_pos, self.horz_hidden_neg)])
-		# plt.ylabel('Fraction of Zero values in Horizontal Weights', fontsize=15)
-		# plt.xlabel('Epoch #', fontsize=15)
-		# plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
-		# plt.title('', fontsize=20)
-		# plt.grid('on')
-		# plt.savefig(model_path + "_horzWeights_zeros.png")
-
-		# # Vertical weights plots
-		# plt.figure()
-		# vert_update_plt, = plt.plot(epochs, [1.0-sum(x) for x in zip(self.vert_update_pos, self.vert_update_neg)])
-		# vert_reset_plt, = plt.plot(epochs, [1.0-sum(x) for x in zip(self.vert_reset_pos, self.vert_reset_neg)])
-		# vert_hidden_plt, = plt.plot(epochs, [1.0-sum(x) for x in zip(self.vert_hidden_pos, self.vert_hidden_neg)])
-		# plt.ylabel('Fraction of Zero values in Vertical Weights', fontsize=15)
-		# plt.xlabel('Epoch #', fontsize=15)
-		# plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
-		# plt.title('', fontsize=20)
-		# plt.grid('on')
-		# plt.savefig(model_path + "_vertWeights_zeros.png")		
-
-		# plt.close("all")
 
 class GRU_Network_Using_Previous_Output(MusicModelGRU):
 	"""docstring for GRU_Network_Using_Previous_Output"""
@@ -801,132 +748,7 @@ class GRU_Network(MusicModelGRU):
 		self.f_eval_gru = theano.function([self.x_pitch_sym, self.x_duration_sym, self.x_mask_sym], output_gru)
 
 
-
-class GRU_Network_Continuous(MusicModelGRU):
-	"""docstring for GRU_Network"""
-	def __init__(self, model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units=25):
-		super(GRU_Network, self).__init__(model_name, max_seq_len, num_features_pitch, num_features_duration, num_gru_layer_units)
-		
-		# Model naming and data path
-		self.model_name = model_name
-		self.model_data_path = "../data/models/"
-
-		# Model hyperparameters
-		self.num_gru_layer_units = num_gru_layer_units
-		self.use_deterministic_previous_output = False
-		
-		# Model feature dimensions
-		self.max_seq_len = max_seq_len-1
-		self.num_features_pitch = num_features_pitch
-		self.num_features_duration = num_features_duration
-		
-		# Training metadata
-		self.batch_size = 10
-		self.number_of_epochs_trained = 0
-
-		### Learning curve data ### 
-		# Categorical Crossentropy Costs 
-		self.cost_train_pitch = []
-		self.cost_train_duration = []
-		self.cost_valid_pitch = []
-		self.cost_valid_duration = []
-		
-		# Accuracies
-		self.acc_train_pitch = []
-		self.acc_train_duration = []
-		self.acc_valid_pitch = []
-		self.acc_valid_duration = []
-
-		# Norms over horizontal GRU weights
-		self.horz_update = []
-		self.horz_reset = []
-		self.horz_hidden = []
-
-		# Norms over vertical GRU weights
-		self.vert_update = []
-		self.vert_reset = []
-		self.vert_hidden = []
-
-		### symbolic theano variables ### 
-		# Note that we are using itensor3 as we 3D one-hot-encoded input (integers)
-		self.x_pitch_sym = T.itensor3('x_pitch_sym')
-		self.x_duration_sym = T.itensor3('x_duration_sym')
-
-		self.y_pitch_sym = T.itensor3('y_pitch_sym')
-		self.y_duration_sym = T.itensor3('y_duration_sym')
-
-		self.mask_sym = T.matrix('mask_sym')
-
-
-
-		##### THE LAYERS OF THE NEXT-STEP PREDICTION GRU NETWORK #####
-
-		### INPUT NETWORK ###
-		# Two input layers receiving Onehot-encoded data
-		l_in_pitch = InputLayer((None, None, self.num_features_pitch), name="l_in_pitch")
-		l_in_duration = InputLayer((None, None, self.num_features_duration), name="l_in_duration")
-
-		# Layer merging the two input layers
-		l_in_merge = ConcatLayer([l_in_pitch, l_in_duration], axis=2, name="l_in_merge")
-		# The mask layer for ignoring time-steps after <eos> in the GRU layer
-		l_in_mask = InputLayer((None, self.max_seq_len), name="l_in_mask")
-
-
-		### OUTPUT NETWORK ###
-		# Simple input layer that the GRU layer can feed it's hidden states to
-		self.l_out_gru = GRULayer(l_in_merge, num_units=self.num_gru_layer_units, name='GRULayer', mask_input=l_in_mask)
-
-		# We need to do some reshape voodo to connect a softmax layer to the decoder.
-		# See http://lasagne.readthedocs.org/en/latest/modules/layers/recurrent.html#examples 
-		# In short this line changes the shape from 
-		# (batch_size, decode_len, num_dec_units) -> (batch_size*decodelen,num_dec_units). 
-		# We need to do this since the softmax is applied to the last dimension and we want to 
-		# softmax the output at each position individually
-		l_out_reshape = ReshapeLayer(self.l_out_gru, (-1, [2]), name="l_out_reshape")
-
-
-		# Setting up the output-layers as softmax-encoded pitch and duration vectors from the dense layers. (Two dense layers with softmax output, e.g. prediction probabilities for next note in melody)
-		l_out_softmax_pitch = DenseLayer(l_out_reshape, num_units=self.num_features_pitch, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_pitch')
-		l_out_softmax_duration = DenseLayer(l_out_reshape, num_units=self.num_features_duration, nonlinearity=lasagne.nonlinearities.softmax, name='SoftmaxOutput_duration')
-
-		# reshape back to 3d format (batch_size, decode_len, num_dec_units). Here we tied the batch size to the shape of the symbolic variable for X allowing 
-		#us to use different batch sizes in the model.
-		self.l_out_pitch = ReshapeLayer(l_out_softmax_pitch, (-1, self.max_seq_len, self.num_features_pitch), name="l_out_pitch")	
-		self.l_out_duration = ReshapeLayer(l_out_softmax_duration, (-1, self.max_seq_len, self.num_features_duration), name="l_out_duration")
-
-		### NETWORK OUTPUTS ###
-		# Setting up the output as softmax-encoded pitch and duration vectors from the dense softmax layers.
-		# (OBS: This is bypassing the onehot layers, so we evaluate the model on the softmax-outputs directly)
-		output_pitch = get_output(self.l_out_pitch, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
-		output_duration = get_output(self.l_out_duration, {l_in_pitch: self.x_pitch_sym, l_in_duration: self.x_duration_sym, l_in_mask: self.x_mask_sym}, deterministic = False)
-
-		# Compute costs
-		cost_pitch, acc_pitch = eval(output_pitch, self.y_pitch_sym, self.num_features_pitch, self.y_mask_sym)
-		cost_duration, acc_duration = eval(output_duration, self.y_duration_sym, self.num_features_duration, self.y_mask_sym)
-		total_cost = cost_pitch + cost_duration
-
-		#Get parameters of both encoder and decoder
-		all_parameters = get_all_params([self.l_out_pitch, self.l_out_duration], trainable=True)
-
-		print "Trainable Model Parameters"
-		print "-"*40
-		for param in all_parameters:
-		    print param, param.get_value().shape
-		print "-"*40
-
-		#add grad clipping to avoid exploding gradients
-		all_grads = [T.clip(g,-3,3) for g in T.grad(total_cost, all_parameters)]
-		all_grads = lasagne.updates.total_norm_constraint(all_grads,3)
-
-		#Compile Theano functions.
-		updates = lasagne.updates.adam(all_grads, all_parameters, learning_rate=0.005)
-
-		#Compile Theano functions.
-		updates = lasagne.updates.adam(all_grads, all_parameters, learning_rate=0.005)
-
-		self.f_train = theano.function([self.x_pitch_sym, self.y_pitch_sym, self.x_duration_sym, self.y_duration_sym, self.x_mask_sym, self.y_mask_sym], [cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration], updates=updates)
-		#since we don't have any stochasticity in the network we will just use the training graph without any updates given
-		self.f_eval = theano.function([self.x_pitch_sym, self.y_pitch_sym, self.x_duration_sym, self.y_duration_sym, self.x_mask_sym, self.y_mask_sym], [cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration])
+####### Helper functions ##########
 
 def eval(output, target, num_features, mask):
 	### Evalutation function returning cost and accuracy given predictions

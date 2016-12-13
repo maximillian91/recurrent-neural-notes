@@ -25,11 +25,57 @@ Other measures used for model investigation are the mean, frobenius norm and pos
 
 After training, the models were evaluated on 2 test songs, handpicked out of the unseen test set. The notes in the original melody (input) are highlighted by colors corresponding to the GRU activations, so patterns, like scale and rhythmical motifs, leading to higher activation can be localized and the functionality of the GRU identified.
 
-To investigate the distribution of the pitch and duration classes, the frequencies of each class in the original data and the reconstructions of the full data set from each model are represented in a histogram.
+To investigate the distribution of the pitch and duration classes, the frequencies of each class in the original data and the reconstructions of the full data set from each model are represented in a histogram in Figure~\ref{fig:learning_curves}
 
-All reconstructions can be translated back to the \texttt{music21} format, written to a midi file, played, written as score and compared against the original melody.  
+All reconstructions can be translated back to the \texttt{music21} format, written to a midi file, played, written as a musical score and compared against the original melody.
 
+\begin{table}
+    \centering
+    \caption{
+        The test evalutation measures.
+    }
+    \label{tab:test_eval}
+    % \setlength{\tabcolsep}{1em}
+    \sisetup{
+        table-number-alignment = center
+    }
+    \begin{tabular}{
+            l@{}
+            S[table-format = 1.0]
+            S[table-format = 0.2]
+            S[table-format = 1.3]
+            S[table-format = 1.3]
+            S[table-format = 2.2]
+            S[table-format = 2.2]
+        }
+        \toprule
+        & {Model} 
+        & $p\idx{drop}$ 
+        & {$L\idx{pitch}$}
+        & {$L\idx{duration}$}
+        & {$P\idx{pitch}$}
+        & {$P\idx{duration}$} \\
+        \midrule
+        \input{../data/eval_table}
+        \bottomrule
+    \end{tabular}
+\end{table}
 
+\begin{figure*}
+    \centering
+	\hspace*{\fill}
+    \subbottom[\label{fig:learning_curves:cost}]{
+        \includegraphics[width = .45\linewidth]{GRU_using_deterministic_previous_output_with_50p_dropout_gru_100_bs_10_e_200_cost}
+    }
+    \hfill
+    \subbottom[\label{fig:learning_curves:acc}]{
+        \includegraphics[width = .45\linewidth]{GRU_using_deterministic_previous_output_with_50p_dropout_gru_100_bs_10_e_200_acc}
+    }
+	\hspace*{\fill}
+    \caption{Learning curves over categorical cross-entropies \subcaptionref{fig:learning_curves:cost} and accuracies \subcaptionref{fig:learning_curves:acc} for both training and validation sets (Model 2 with $N\idx{gru} = 100$ and dropout of $50\%$)
+    }
+    \label{fig:learning_curves}
+\end{figure*}
 % \subsection*{EHR synopsis}
 
 % We expect our model to be able to predict future diagnoses better than baseline methods like logistic regression and the frequency baseline test given in Doctor AI. At the same time, the model will learn to recognise specific patterns in the patient history that will enhance the models predictive power. These patterns can be investigated and used as important markers for doctors to analyse the patient history and whether later complications can be expected and avoided.

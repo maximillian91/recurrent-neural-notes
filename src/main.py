@@ -1,12 +1,12 @@
 import numpy as np 
 import models
-from data import load_data, dataStatsBarPlot
+from data import load_data, dataStatsBarPlot, write2table
 import matplotlib.pyplot as plt
 import seaborn
 seaborn.set(style='ticks', palette='Set2')
 seaborn.set_context("paper")
 
-def load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data=None, song_data=None, data_pitch_map=None, data_duration_map=None, write2midi=False, plotLearningCurves=False, in_dropout_p=0.2, out_dropout_p=0.5):
+def load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data=None, song_data=None, data_pitch_map=None, data_duration_map=None, write2midi=False, plotLearningCurves=False, plotActivationSeq=False, in_dropout_p=0.2, out_dropout_p=0.5):
 
 	if USE_DETERMINISTIC_PREVIUOS_OUTPUT is not None:
 		print("Setting up extended RNN model: {} with {} GRU".format(model_name, NUM_GRU_LAYER_UNITS))
@@ -24,11 +24,11 @@ def load_train_save_model(model_name, max_seq_len, num_features_pitch, num_featu
 
 	# Evaluate and printout results:
 	if test_data is not None:
-		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(test_data, None, None, False, data_pitch_map, data_duration_map, False)
+		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(test_data, None, None, False, data_pitch_map, data_duration_map)
 		print("test_data accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
 
 	if song_data is not None:
-		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(song_data, None, None, write2midi, data_pitch_map, data_duration_map, plotLearningCurves)
+		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(song_data, None, None, write2midi, data_pitch_map, data_duration_map, plotActivationSeq)
 		print("song_data accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
 		print(np.argmax(output_pitch,axis=2))
 
@@ -76,7 +76,8 @@ def main():
 	print(song_data["mask"])
 
 	write2midi = False
-	plotLearningCurves = False
+	plotLearningCurves = True
+	plotActivationSeq = False
 
 	# Setting model feature shapes
 	N_total, max_seq_len, num_features_pitch = np.shape(data_pitch)
@@ -87,63 +88,83 @@ def main():
 	fig_pitch, ax_pitch = plt.subplots(figsize=(9,6))
 	fig_duration, ax_duration = plt.subplots(figsize=(6,6))
 
- 	palette = seaborn.color_palette(palette='muted', n_colors=4, desat=None)
-	#palette = seaborn.diverging_palette(240, 10, l=75, n=2)
+ 	palette = seaborn.color_palette(palette='muted', n_colors=10, desat=None)
 
 	# TODO: DATA STATS - WORK IN PROGRESS - PERCENTAGES
-	# rects_pitch = dataStatsBarPlot(data_pitch, data_mask, data_pitch_map, is_pitch=True, ax=ax_pitch)
-	rects_duration = dataStatsBarPlot(data_duration, data_mask, data_duration_map, palette[0], is_pitch=False, ax=ax_duration)
+	rects_duration = dataStatsBarPlot(data_duration, data_mask, data_duration_map, palette, is_pitch=False, ax=ax_duration)
 	fig_duration.canvas.draw()
-	# rects_pitch = dataStatsBarPlot(data_pitch, data_mask, data_pitch_map, is_pitch=True, ax=ax_pitch, rects=rects_pitch)
-	rects_pitch = dataStatsBarPlot(data_pitch, data_mask, data_pitch_map, palette[0], is_pitch=True, ax=ax_pitch)
+	rects_pitch = dataStatsBarPlot(data_pitch, data_mask, data_pitch_map, palette, is_pitch=True, ax=ax_pitch)
 	fig_pitch.canvas.draw()
-
-
 
 
 	NUM_GRU_LAYER_UNITS, BATCH_SIZE, NUM_EPOCHS = 25, 10, 0
 
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
-	# set_x_input_to_zero = False
 
-	# model4_name = "GRU_using_previous_output_only_4"
-	# load_train_save_model(model4_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, False, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, True)
+	# Initialize model specs.
+	model_specs = []
+	# model_specs.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True})
+	# model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_20p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True})
+	model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotActivationSeq': False, 'plotLearningCurves': True})
+	# model_specs.append({'name': 'Normal_GRU_Network', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True})
+	# model_specs.append({'name': 'Normal_GRU_Network_with_20p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0.5, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True})
+	# model_specs.append({'name': 'GRU_using_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 200, 'num_gru': 100})
+	# model_names.append({'name': 'GRU_using_nondeterministic_previous_output_with_50p_dropout', 'use_deterministic_output': False, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 200, 'num_gru': 100})
+	# model_names.append({'name': 'GRU_using_nondeterministic_previous_output_with_20p_dropout', 'use_deterministic_output': False, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 200, 'num_gru': 100})
 
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = False
-	# set_x_input_to_zero = False
+	# Setup and train 
+	for i, model_spec in enumerate(model_specs):
+		if 'plotLearningCurves' in model_spec:
+			plotLearningCurves = model_spec['plotLearningCurves']
+		else:
+			plotLearningCurves = False
 
-	# model5_name = "GRU_using_previous_output_only_5"
-	# load_train_save_model(model5_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, False, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, True)
+		if 'plotActivationSeq' in model_spec:
+			plotActivationSeq = model_spec['plotActivationSeq']
+		else:
+			plotActivationSeq = False
 
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = False
-	# set_x_input_to_zero = True
+		if 'testEvaluation' in model_spec:
+			testEvaluation = model_spec['testEvaluation']
+		else: 
+			testEvaluation = False
 
-	# model6_name = "GRU_using_previous_output_only_6"
-	# load_train_save_model(model6_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, False, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, True)
+		if 'write2midi' in model_spec:
+			write2midi = model_spec['write2midi']
+		else: 
+			write2midi = False
 
-	model_names = []
-	model_names.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100})
-	model_names.append({'name': 'Normal_GRU_Network', 'use_deterministic_output': None, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100})
-	model_names.append({'name': 'Normal_GRU_Network_with_Dropout', 'use_deterministic_output': None, 'zero_input': True, 'in_dropout_p': 0.2, 'out_dropout_p': 0.5, 'num_epochs': 0, 'num_gru': 100})
+		if 'plotDataStats' in model_spec:
+			plotDataStats = model_spec['plotDataStats']
+		else: 
+			plotDataStats = False
 
-	# Setup and train GRU_using_only_deterministic_previous_output model
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
-	# set_x_input_to_zero = True
-	# in_dropout_p = 0.2
-	# NUM_EPOCHS = 0
-	#model_name = "GRU_using_only_deterministic_previous_output"
-	for i, model_name in enumerate(model_names):
-		model = load_train_save_model(model_name['name'], max_seq_len, num_features_pitch, num_features_duration, model_name['num_gru'], model_name['use_deterministic_output'], model_name['zero_input'], BATCH_SIZE, model_name['num_epochs'], train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves, model_name['in_dropout_p'], model_name['out_dropout_p'])
+		model = load_train_save_model(model_spec['name'], max_seq_len, num_features_pitch, num_features_duration, model_spec['num_gru'], model_spec['use_deterministic_output'], model_spec['zero_input'], BATCH_SIZE, model_spec['num_epochs'], train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves, plotActivationSeq, model_spec['in_dropout_p'], model_spec['out_dropout_p'])
+		model_spec
+		# Plot the histogram over model reconstructions for total data set.
+		if True:
+			cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(all_data, None, None, write2midi, data_pitch_map, data_duration_map)
+			rects_duration = dataStatsBarPlot(output_duration, data_mask_y, data_duration_map, palette, is_pitch=False, ax=ax_duration, rects=rects_duration)
+			fig_duration.canvas.draw()
+			rects_pitch = dataStatsBarPlot(output_pitch, data_mask_y, data_pitch_map, palette, is_pitch=True, ax=ax_pitch, rects=rects_pitch)
+			fig_pitch.canvas.draw()
 
-		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(all_data, None, None, write2midi, data_pitch_map, data_duration_map, plotLearningCurves)
+		# Evaluate on test set
+		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(test_data, None, None, write2midi, data_pitch_map, data_duration_map)
 
-		rects_duration = dataStatsBarPlot(output_duration, data_mask_y, data_duration_map, palette[1+i], is_pitch=False, ax=ax_duration, rects=rects_duration)
-		fig_duration.canvas.draw()
-		rects_pitch = dataStatsBarPlot(output_pitch, data_mask_y, data_pitch_map, palette[1+i], is_pitch=True, ax=ax_pitch, rects=rects_pitch)
-		fig_pitch.canvas.draw()
+		# Write evaluation measures to a LaTex table.
+		if testEvaluation: 
+			if model_spec['use_deterministic_output'] is not None: 
+				if model_spec['use_deterministic_output']:
+					model_num = 2
+				else:
+					model_num = 3
+			else: 
+				model_num = 1
+			write2table('../data/eval_table', model_num, model_spec['num_gru'], model_spec['in_dropout_p'], cost_pitch, cost_duration, acc_pitch, acc_duration)
 
 
-	legend_names = tuple(['original data'] + [mod['name'].replace('_',' ') + ' (#gru=' + str(mod['num_gru']) for mod in model_names])
+	# Plot the entire histogram
+	legend_names = tuple(['original data'] + [mod['name'].replace('_',' ') + ' (#gru=' + str(mod['num_gru'])+')' for mod in model_specs])
 	bars_pitch = tuple([rect[0] for rect in rects_pitch])
 	bars_duration = tuple([rect[0] for rect in rects_duration])
 
@@ -154,172 +175,6 @@ def main():
 	plt.savefig("../data/" + "pitch_freq_barplot.png")
 	plt.figure(fig_duration.number)
 	plt.savefig("../data/" + "duration_freq_barplot.png")
-
-	# in_dropout_p = 0.2
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
-	# set_x_input_to_zero = True
-	# model_name = "GRU_using_deterministic_previous_output"
-	# for NUM_GRU_LAYER_UNITS in [25, 50, 75, 100]:
-	# 	load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT,in_dropout_p, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves)
-
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = None
-	# set_x_input_to_zero = False
-	# in_dropout_p = 0.2
-	# out_dropout_p = 0.5
-	# model0_name = "Normal_GRU_Network_with_Dropout"
-	# NUM_EPOCHS = 160
-	# for NUM_GRU_LAYER_UNITS in [50]:
-	# 	model = load_train_save_model(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves, in_dropout_p, out_dropout_p)
-	# 	cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(all_data, None, None, False, data_pitch_map, data_duration_map, False)
-		# rects_pitch, bar_num_pitch, legends_pitch = dataStatsBarPlot(output_pitch, data_mask_y, data_pitch_map, is_pitch=True, ax_pitch, bar_num_pitch)
-		# rects_duration, bar_num_duration, legends_duration = dataStatsBarPlot(output_duration, data_mask_y, data_duration_map, is_pitch=False, ax_duration, bar_num_duration)
-
-	# NUM_GRU_LAYER_UNITS = 50
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = None
-	# set_x_input_to_zero = False
-	# model0_name = "Normal_GRU_Network_0"
-	# load_train_save_model(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, False, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves)
-
-	# NUM_GRU_LAYER_UNITS = 75
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = None
-	# set_x_input_to_zero = False
-	# model0_name = "Normal_GRU_Network_0"
-	# load_train_save_model(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, False, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves)
-
-
-	# NUM_GRU_LAYER_UNITS = 100
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = None
-	# set_x_input_to_zero = False
-	# model0_name = "Normal_GRU_Network_0"
-	# load_train_save_model(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, False, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves)
-
-
-
-	# Setting model hyperparameters 
-	# BATCH_SIZE = 10
-	# NUM_GRU_LAYER_UNITS = 50
-	# NUM_EPOCHS = 0
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
-
-	# dropout_range = np.arange(5, max_seq_len-1, 1)
-	# dropout_fraction = 0.25
-
-	# ###### MODELS ########
-	# model0_name = "Normal_GRU_Network"
-	# print("MODEL: {} with {} GRU".format(model0_name, NUM_GRU_LAYER_UNITS))
-	# model0 = models.GRU_Network(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS)
-	# model0.load(model0_name, 200)
-	# # model0.load(model0_name)	
-	# # model0.train(train_data, valid_data, NUM_EPOCHS, BATCH_SIZE)
-	# # model0.plotLearningCurves()
-	# # model0.save()
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model0.evaluate(test_data, None, None, False, data_pitch_map, data_duration_map)
-	# print("test_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model0.evaluate(song_data, None, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# # cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model0.evaluate(song_data, dropout_range, None, write2midi, data_pitch_map, data_duration_map)
-	# # print("song_data, dropout_range, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# # cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model0.evaluate(song_data, None, dropout_fraction, write2midi, data_pitch_map, data_duration_map)
-	# # print("song_data, None, dropout_fraction accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-
-
-	# model1_name = "GRU_using_previous_output"
-	# print("MODEL: {} with {} GRU".format(model1_name, NUM_GRU_LAYER_UNITS))
-	# model1 = models.GRU_Network_Using_Previous_Output(model1_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT)
-	# model1.load(model1_name, 200)
-	# # model1.load(model1_name)
-	# # model1.train(train_data, valid_data, NUM_EPOCHS, BATCH_SIZE)
-	# # model1.plotLearningCurves()
-	# # model1.save()
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model1.evaluate(test_data, None, None, False, data_pitch_map, data_duration_map)
-	# print("test_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model1.evaluate(song_data, None, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model1.evaluate(song_data, dropout_range, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, dropout_range, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model1.evaluate(song_data, None, dropout_fraction, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, dropout_fraction accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-
-
-	# model2_name = "GRU_using_nondeterministic_previous_output"
-	# print("MODEL: {} with {} GRU".format(model2_name, NUM_GRU_LAYER_UNITS))
-	# model2 = models.GRU_Network_Using_Previous_Output(model2_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, False)
-	# model2.load(model2_name, 200)
-	# # model2.load(model2_name)	
-	# # model2.train(train_data, valid_data, NUM_EPOCHS, BATCH_SIZE)	
-	# # model2.plotLearningCurves()
-	# # model2.save()
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model2.evaluate(test_data, None, None, False, data_pitch_map, data_duration_map)
-	# print("test_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model2.evaluate(song_data, None, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model2.evaluate(song_data, dropout_range, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, dropout_range, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model2.evaluate(song_data, None, dropout_fraction, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, dropout_fraction accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-
-
-	# Setting model hyperparameters 
-	# BATCH_SIZE = 10
-	# NUM_GRU_LAYER_UNITS = 25
-	# NUM_EPOCHS = 0
-	# USE_DETERMINISTIC_PREVIUOS_OUTPUT = True
-
-
-	# ###### MODELS ########
-	# model0_name = "Normal_GRU_Network"
-	# print("MODEL: {} with {} GRU".format(model0_name, NUM_GRU_LAYER_UNITS))
-	# model0 = models.GRU_Network(model0_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS)
-	# model0.load(model0_name, 200)
-	# # model0.load(model0_name)	
-	# # model0.train(train_data, valid_data, NUM_EPOCHS, BATCH_SIZE)
-	# # model0.plotLearningCurves()
-	# # model0.save()
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model0.evaluate(test_data, None, None, False, data_pitch_map, data_duration_map)
-	# print("test_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model0.evaluate(song_data, None, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model0.evaluate(song_data, dropout_range, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, dropout_range, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model0.evaluate(song_data, None, dropout_fraction, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, dropout_fraction accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	
-
-	# model1_name = "GRU_using_previous_output"
-	# print("MODEL: {} with {} GRU".format(model1_name, NUM_GRU_LAYER_UNITS))
-	# model1 = models.GRU_Network_Using_Previous_Output(model1_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT)
-	# model1.load(model1_name, 200)
-	# # model1.load(model1_name)
-	# # model1.train(train_data, valid_data, NUM_EPOCHS, BATCH_SIZE)
-	# # model1.plotLearningCurves()
-	# # model1.save()
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model1.evaluate(test_data, None, None, False, data_pitch_map, data_duration_map)
-	# print("test_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model1.evaluate(song_data, None, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model1.evaluate(song_data, dropout_range, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, dropout_range, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model1.evaluate(song_data, None, dropout_fraction, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, dropout_fraction accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-
-
-	# model2_name = "GRU_using_nondeterministic_previous_output"
-	# print("MODEL: {} with {} GRU".format(model2_name, NUM_GRU_LAYER_UNITS))
-	# model2 = models.GRU_Network_Using_Previous_Output(model2_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, False)
-	# model2.load(model2_name, 200)
-	# # model2.load(model2_name)	
-	# # model2.train(train_data, valid_data, NUM_EPOCHS, BATCH_SIZE)	
-	# # model2.plotLearningCurves()
-	# # model2.save()
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model2.evaluate(test_data, None, None, False, data_pitch_map, data_duration_map)
-	# print("test_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model2.evaluate(song_data, None, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model2.evaluate(song_data, dropout_range, None, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, dropout_range, None accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-	# cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration =model2.evaluate(song_data, None, dropout_fraction, write2midi, data_pitch_map, data_duration_map)
-	# print("song_data, None, dropout_fraction accuracy: (pitch, duration)=({:.3g},{:.3g})".format(float(acc_pitch), float(acc_duration)))
-
 
 
 if __name__ == '__main__':
