@@ -29,7 +29,7 @@ To investigate the distribution of the pitch and duration classes, the frequenci
 
 All reconstructions can be translated back to the \texttt{music21} format, written to a midi file, played, written as a musical score and compared against the original melody.
 
-\begin{table}
+\begin{table*}
     \centering
     \caption{
         The test evalutation measures.
@@ -43,6 +43,7 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
             l@{}
             S[table-format = 1.0]
             S[table-format = 0.2]
+            S[table-format = 1.0]
             S[table-format = 1.3]
             S[table-format = 1.3]
             S[table-format = 2.2]
@@ -50,16 +51,17 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
         }
         \toprule
         & {Model} 
-        & $p\idx{drop}$ 
+        & {$p\idx{dropout}$}
+        & {$L_2$}
         & {$L\idx{pitch}$}
         & {$L\idx{duration}$}
-        & {$P\idx{pitch}$}
-        & {$P\idx{duration}$} \\
+        & {$P\idx{pitch}$(\%)}
+        & {$P\idx{duration}$(\%)} \\
         \midrule
         \input{../data/eval_table}
         \bottomrule
     \end{tabular}
-\end{table}
+\end{table*}
 
 \begin{figure*}
     \centering
@@ -76,6 +78,24 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
     }
     \label{fig:learning_curves}
 \end{figure*}
+
+\begin{figure*}
+    \centering
+    \setkeys{Gin}{height=.25\textheight}
+	\hspace*{\fill}
+    \subbottom[\label{fig:histogram:pitch}]{
+        \includegraphics{pitch_freq_barplot}
+    }
+    \hfill
+    \subbottom[\label{fig:histogram:duration}]{
+        \includegraphics{duration_freq_barplot}
+    }
+	\hspace*{\fill}
+    \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram:pitch} and duration \subcaptionref{fig:histogram:duration} classes.)
+    }
+    \label{fig:learning_curves}
+\end{figure*}
+
 % \subsection*{EHR synopsis}
 
 % We expect our model to be able to predict future diagnoses better than baseline methods like logistic regression and the frequency baseline test given in Doctor AI. At the same time, the model will learn to recognise specific patterns in the patient history that will enhance the models predictive power. These patterns can be investigated and used as important markers for doctors to analyse the patient history and whether later complications can be expected and avoided.

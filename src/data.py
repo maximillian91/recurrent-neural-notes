@@ -439,7 +439,7 @@ def dataStatsBarPlot(data_ohe, mask, ind2feat_map, palette, is_pitch=False, ax=N
 
 		else: 
 			if feat < 4:
-			    feat_string = "1/{:<.0f}".format(4/feat)
+			    feat_string = "1/{:<.1f}".format(4/feat)
 			elif feat == 8.0:
 			    feat_string = "2/1"
 			elif feat == 6.0:
@@ -469,9 +469,9 @@ def dataStatsBarPlot(data_ohe, mask, ind2feat_map, palette, is_pitch=False, ax=N
 
 	return rects
 
-def write2table(table_file, model_num, num_gru, dropout_p, pitch_cost, duration_cost, pitch_acc, duration_acc):
+def write2table(table_file, model_num, dropout_p, use_l2_penalty, pitch_cost, duration_cost, pitch_acc, duration_acc):
 	with open(table_file + '.tex', "a") as text_file:
-		text_file.write("& {} & {} & {} & {:.3g} & {:.3g} & {:.3g}\\% & {:.3g}\\% \\\\ \n".format(model_num, dropout_p, num_gru, float(pitch_cost), float(duration_cost), 100.0*float(pitch_acc), 100.0*float(duration_acc)))
+		text_file.write("& {} & {} & {} & {:.3g} & {:.3g} & {:.3g} & {:.3g} \\\\ \n".format(model_num, dropout_p, use_l2_penalty, float(pitch_cost), float(duration_cost), 100.0*float(pitch_acc), 100.0*float(duration_acc)))
 
 
 def main():
