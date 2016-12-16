@@ -9,6 +9,7 @@ from music21 import converter, note, stream, duration, midi
 from PIL import Image, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
 import seaborn
+from fractions import Fraction
 seaborn.set(style='ticks', palette='Set2')
 seaborn.set_context("paper")
 
@@ -406,72 +407,86 @@ def load_data(data_file="data", partition_file="partition", train_partition=0.8)
 
 	return data_ohe, data
 
-def dataStatsBarPlot(data_ohe, mask, ind2feat_map, palette, is_pitch=False, ax=None, rects=None):
+def dataStatsBarPlot(data_ohe, mask, ind2feat_map, palette, is_pitch=False, ax=None, rects_list=None, bar_labels=False):
 	if ax is None:
 		fig, ax = plt.subplots(figsize=(9,6))
 
-	if rects is None:
-		rects = tuple()
+	if rects_list is None:
+		rects_list = tuple()
 		bar_num = 1
 	else:
-		bar_num = len(rects) + 1
+		bar_num = len(rects_list) + 1
 
 
+	data_ohe = np.delete(data_ohe, 0, 2)
 	NUM_FEATURES = data_ohe.shape[2]
-	np.delete(data_ohe, 0, 1)
+	print(NUM_FEATURES)
 
 	flat_data = data_ohe.reshape((-1, NUM_FEATURES))
 	flat_mask = mask.flatten()
 
 	feat_count = np.dot(flat_mask, flat_data)
-	feat_fract = (feat_count / np.sum(feat_count)).astype('float32')
+	total_notes = np.dot(flat_mask, flat_mask)
+	total_counts = np.sum(feat_count).astype('int32')
+	print "Total number of notes in data set is:", total_counts
+	feat_fract = (feat_count / total_counts.astype('float32')).astype('float32')
+
 
 	test_note = note.Note()
 	stats = []
 	labels = tuple()
 	fractions = tuple()
-	for i in range(NUM_FEATURES-1):
+	for i in range(NUM_FEATURES):
 		feat = ind2feat_map[i+1]
 		if is_pitch:
-			test_note.pitch.midi = feat
-			feat_string = test_note.pitch.nameWithOctave
-			feat_string = feat_string.replace('-', 'b')
+			if i == 0:
+				feat_string = "%"
+			else:
+				test_note.pitch.midi = feat
+				feat_string = test_note.pitch.nameWithOctave
+				feat_string = feat_string.replace('-', 'b')
 
 		else: 
-			if feat < 4:
-			    feat_string = "1/{:<.1f}".format(4/feat)
-			elif feat == 8.0:
-			    feat_string = "2/1"
-			elif feat == 6.0:
-			    feat_string = "3/2"
-			elif feat_string == 4.0:
-				feat_string == "1/1"
-			else:
-			    feat_string = str(feat)
+			feat_string = str(Fraction(feat/4.0).limit_denominator())
+			
 		stats += [(feat_string, feat_fract[i]*100)]
 		labels += (feat_string,)
 		fractions += (feat_fract[i],)
 
-	ind = np.arange(NUM_FEATURES-1)
+	ind = np.arange(NUM_FEATURES)
 	total_width = 0.9 
 	new_width = total_width / bar_num
-	rects += (ax.bar(ind + new_width, fractions, new_width, color=palette[bar_num-1]),)
+	rects_list += (ax.bar(ind, fractions, new_width, color=palette[bar_num-1]),)
 
-	for i, rect in enumerate(rects):
-		for j, child in enumerate(rect):
-			child.set_width(new_width)
-			child.set_x(j + i*new_width)
+	for i, rects in enumerate(rects_list):
+		for j, rect in enumerate(rects):
+			rect.set_width(new_width)
+			rect.set_x(j + i*new_width)
 
 	ax.set_ylabel('Frequency')
 	ax.set_title('')
 	ax.set_xticks(ind+(total_width)/2.0)
 	ax.set_xticklabels(labels)
 
-	return rects
+	def autolabel(rects, feat_count=None):
+	# attach some text labels
+		for i, rect in enumerate(rects):
+			if feat_count is None:
+				height = rect.get_height()
+			else:
+				height = feat_count[i]
+			if height < 1000:
+				ax.text(rect.get_x() + rect.get_width()/2., 0.001+rect.get_height(), '{:.5g}'.format(height), ha='center', va='bottom', fontsize=8)
+
+	if bar_labels:
+		for rects in rects_list:
+			autolabel(rects, feat_count)
+
+	return rects_list
 
 def write2table(table_file, model_num, dropout_p, use_l2_penalty, pitch_cost, duration_cost, pitch_acc, duration_acc):
 	with open(table_file + '.tex', "a") as text_file:
-		text_file.write("& {} & {} & {} & {:.3g} & {:.3g} & {:.3g} & {:.3g} \\\\ \n".format(model_num, dropout_p, use_l2_penalty, float(pitch_cost), float(duration_cost), 100.0*float(pitch_acc), 100.0*float(duration_acc)))
+		text_file.write("& {} & {} & {} & {:.2f} & {:.2f} & {:.1f} & {:.1f} \\\\ \n".format(model_num, dropout_p, use_l2_penalty, float(pitch_cost), float(duration_cost), 100.0*float(pitch_acc), 100.0*float(duration_acc)))
 
 
 def main():
@@ -504,6 +519,7 @@ def main():
 
 
 	data_ohe, data = load_data(data_file="data_new", partition_file="partition", train_partition=0.8)
+
 
 
 	# TODO: DATA STATS - WORK IN PROGRESS - PERCENTAGES

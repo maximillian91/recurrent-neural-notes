@@ -3,7 +3,8 @@ import models
 from data import load_data, dataStatsBarPlot, write2table
 import matplotlib.pyplot as plt
 import seaborn
-seaborn.set(style='ticks', palette='Set2')
+std_palette = seaborn.color_palette('Set2', 8)
+seaborn.set(style='ticks', palette=std_palette)
 seaborn.set_context("paper")
 
 def load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data=None, song_data=None, data_pitch_map=None, data_duration_map=None, write2midi=False, plotLearningCurves=False, plotActivationSeq=False, in_dropout_p=0.2, out_dropout_p=0.5, use_l2_penalty=False):
@@ -92,29 +93,44 @@ def main():
  	duration_palette = seaborn.color_palette(palette='husl', n_colors=n_colors, desat=0.5)
 
 	# TODO: DATA STATS - WORK IN PROGRESS - PERCENTAGES
-	rects_duration = dataStatsBarPlot(data_duration, data_mask, data_duration_map, palette, is_pitch=False, ax=ax_duration)
+	rects_duration = dataStatsBarPlot(data_duration, data_mask, data_duration_map, palette, is_pitch=False, ax=ax_duration, bar_labels=True)
 	fig_duration.canvas.draw()
-	rects_pitch = dataStatsBarPlot(data_pitch, data_mask, data_pitch_map, palette, is_pitch=True, ax=ax_pitch)
+	rects_pitch = dataStatsBarPlot(data_pitch, data_mask, data_pitch_map, palette, is_pitch=True, ax=ax_pitch, bar_labels=True)
 	fig_pitch.canvas.draw()
 
+	# Plot the entire histogram
+	legend_names = tuple(['Original data'])
+	bars_pitch = tuple([rect[0] for rect in rects_pitch])
+	bars_duration = tuple([rect[0] for rect in rects_duration])
+
+	ax_pitch.legend(bars_pitch, legend_names)
+	ax_duration.legend(bars_duration, legend_names)
+
+	plt.figure(fig_pitch.number)
+	plt.savefig("../data/models/" + "orig_pitch_freq_barplot.pdf")
+	plt.figure(fig_duration.number)
+	plt.savefig("../data/models/" + "orig_duration_freq_barplot.pdf")
 
 	NUM_GRU_LAYER_UNITS, BATCH_SIZE, NUM_EPOCHS = 25, 10, 0
-
+	NO_TRAINING = False
+	NO_PLOTTING = True
 
 	# Initialize model specs.
 	model_specs = []
-	# model_specs.append({'name': 'Normal_GRU_Network', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True})
-	model_specs.append({'name': 'Normal_GRU_Network_0', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
-	# model_specs.append({'name': 'Normal_GRU_Network_1_with_20p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 50, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
-	model_specs.append({'name': 'Normal_GRU_Network_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0.5, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
-	model_specs.append({'name': 'Normal_GRU_Network_with_l2', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
+	# model_specs.append({'name': 'Normal_GRU_Network', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
+	# model_specs.append({'name': 'Normal_GRU_Network_0', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
+	# # model_specs.append({'name': 'Normal_GRU_Network_1_with_20p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 50, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
+	# model_specs.append({'name': 'Normal_GRU_Network_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
+	model_specs.append({'name': 'Normal_GRU_Network_2_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 200, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
+	# model_specs.append({'name': 'Normal_GRU_Network_with_l2', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
+	# model_specs.append({'name': 'Normal_GRU_Network_with_l2_and_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
 
-	model_specs.append({'name': 'GRU_using_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
-	# model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_20p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True})
-	model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotActivationSeq': False, 'plotLearningCurves': True})
-	model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
-	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
-	# model_specs.append({'name': 'GRU_using_only_deterministic_previous_output_with_l2', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 200, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
+	# model_specs.append({'name': 'GRU_using_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
+	# # # model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_20p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True})
+	# model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotActivationSeq': False, 'plotLearningCurves': False})
+	# model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
+	# model_specs.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
+	# model_specs.append({'name': 'GRU_using_only_deterministic_previous_output_with_l2', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True})
 
 
 
@@ -156,23 +172,25 @@ def main():
 		else: 
 			use_l2_penalty = False		
 
-		model = load_train_save_model(model_spec['name'], max_seq_len, num_features_pitch, num_features_duration, model_spec['num_gru'], model_spec['use_deterministic_output'], model_spec['zero_input'], BATCH_SIZE, model_spec['num_epochs'], train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves, plotActivationSeq, model_spec['in_dropout_p'], model_spec['out_dropout_p'], use_l2_penalty)
+		if NO_TRAINING:
+			num_epochs = 0
+		else:
+			num_epochs = model_spec['num_epochs']
 
-		if plotLearningCurves:
+		model = load_train_save_model(model_spec['name'], max_seq_len, num_features_pitch, num_features_duration, model_spec['num_gru'], model_spec['use_deterministic_output'], model_spec['zero_input'], BATCH_SIZE, num_epochs, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves, plotActivationSeq, model_spec['in_dropout_p'], model_spec['out_dropout_p'], use_l2_penalty)
+
+		if plotLearningCurves and not NO_PLOTTING:
 			print "plotting learning curves of ", model_spec['name'], "\n"
-			if plot_count > 0:
-				fig_list = model.plotLearningCurves(pitch_palette[plot_count], duration_palette[plot_count], fig_list=fig_list, save_png_now=(plot_count>=6), model_num=plot_count+1)	
-			else:
-				fig_list = model.plotLearningCurves(pitch_palette[plot_count], duration_palette[plot_count], fig_list=None, save_png_now=(plot_count>=6), model_num=plot_count+1)
+			fig_list = model.plotLearningCurves(std_palette, fig_list=None, save_now=True, model_num=plot_count+1, fig_ext='.pdf')
 			plot_count += 1
 
 		# Plot the histogram over model reconstructions for total data set.
-		if plotDataStats:
+		if plotDataStats and not NO_PLOTTING:
 			print "plotting data stats of ", model_spec['name'], "\n"
 			cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(all_data, None, None, write2midi, data_pitch_map, data_duration_map, False, False)
-			rects_duration = dataStatsBarPlot(output_duration, data_mask_y, data_duration_map, palette, is_pitch=False, ax=ax_duration, rects=rects_duration)
+			rects_duration = dataStatsBarPlot(output_duration, data_mask_y, data_duration_map, palette, is_pitch=False, ax=ax_duration, rects_list=rects_duration)
 			fig_duration.canvas.draw()
-			rects_pitch = dataStatsBarPlot(output_pitch, data_mask_y, data_pitch_map, palette, is_pitch=True, ax=ax_pitch, rects=rects_pitch)
+			rects_pitch = dataStatsBarPlot(output_pitch, data_mask_y, data_pitch_map, palette, is_pitch=True, ax=ax_pitch, rects_list=rects_pitch)
 			fig_pitch.canvas.draw()
 
 		# Evaluate on test set
@@ -199,9 +217,9 @@ def main():
 	ax_duration.legend(bars_duration, legend_names)
 
 	plt.figure(fig_pitch.number)
-	plt.savefig("../data/models/" + "pitch_freq_barplot.png")
+	plt.savefig("../data/models/" + "models_pitch_freq_barplot.pdf")
 	plt.figure(fig_duration.number)
-	plt.savefig("../data/models/" + "duration_freq_barplot.png")
+	plt.savefig("../data/models/" + "models_duration_freq_barplot.pdf")
 
 
 if __name__ == '__main__':

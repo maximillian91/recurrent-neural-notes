@@ -444,7 +444,7 @@ class MusicModelGRU(object):
 			self.vert_reset_neg = model["vert_reset_neg"]
 			self.vert_hidden_neg = model["vert_hidden_neg"]
 
-	def plotLearningCurves(self, pitch_color, duration_color, fig_list=None, save_png_now=True, model_num=0):
+	def plotLearningCurves(self, palette, fig_list=None, save_now=True, model_num=0, fig_ext='.png'):
 		model_path = self.model_data_path + self.model_name + "_gru_{}_bs_{}_e_{}".format(self.num_gru_layer_units, self.batch_size, self.number_of_epochs_trained)
 		epochs = range(1, self.number_of_epochs_trained+1)
 
@@ -455,43 +455,36 @@ class MusicModelGRU(object):
 
 		# Accuracy plots
 		if fig_list is None:
-			new_fig_list += [plt.figure()]
-			old_handles = []
-			old_labels = []			
+			new_fig_list += [plt.figure()]	
 		else:
 			plt.figure(new_fig_list[0].number)
-			ax = fig_list[0].get_axes()[0]
-			handles, labels = ax.get_legend_handles_labels()
-			old_handles = handles[:-5]
-			old_labels = labels[:-5]
 
-
-		acc_train_pitch_plt, = plt.plot(epochs, self.acc_train_pitch, color=pitch_color, linestyle='-')
-		acc_valid_pitch_plt, = plt.plot(epochs, self.acc_valid_pitch, color=pitch_color, linestyle='--')
-		acc_train_duration_plt, = plt.plot(epochs, self.acc_train_duration, color=duration_color, linestyle='-')
-		acc_valid_duration_plt, = plt.plot(epochs, self.acc_valid_duration, color=duration_color, linestyle='--')
+		acc_train_pitch_plt, = plt.plot(epochs, self.acc_train_pitch, color=palette[0], linestyle='-')
+		acc_valid_pitch_plt, = plt.plot(epochs, self.acc_valid_pitch, color=palette[0], linestyle='--')
+		acc_train_duration_plt, = plt.plot(epochs, self.acc_train_duration, color=palette[1], linestyle='-')
+		acc_valid_duration_plt, = plt.plot(epochs, self.acc_valid_duration, color=palette[1], linestyle='--')
 		plt.ylabel('Accuracies')
 		plt.xlabel('Epoch #')
-		plt.legend(old_handles + [acc_train_pitch_plt, acc_train_pitch_plt, acc_valid_pitch_plt, acc_train_duration_plt, acc_valid_duration_plt], old_labels + ["Model " + str(model_num), "Training Pitch", "Validation Pitch", "Training Duration", "Validation Duration"])
+		plt.legend([acc_train_pitch_plt, acc_valid_pitch_plt, acc_train_duration_plt, acc_valid_duration_plt], ["Training Pitch", "Validation Pitch", "Training Duration", "Validation Duration"])
 		plt.grid('on')
-		if save_png_now:
-			plt.savefig(model_path + "_acc.png")
+		if save_now:
+			plt.savefig(model_path + "_acc" + fig_ext)
 
 		# Cost plots
 		if fig_list is None:
 			new_fig_list += [plt.figure()]
 		else:
 			plt.figure(new_fig_list[1].number)
-		cost_train_pitch_plt, = plt.plot(epochs, self.cost_train_pitch, color=pitch_color, linestyle='-')
-		cost_valid_pitch_plt, = plt.plot(epochs, self.cost_valid_pitch, color=pitch_color, linestyle='--')
-		cost_train_duration_plt, = plt.plot(epochs, self.cost_train_duration, color=duration_color, linestyle='-')
-		cost_valid_duration_plt, = plt.plot(epochs, self.cost_valid_duration, color=duration_color, linestyle='--')
+		cost_train_pitch_plt, = plt.plot(epochs, self.cost_train_pitch, color=palette[0], linestyle='-')
+		cost_valid_pitch_plt, = plt.plot(epochs, self.cost_valid_pitch, color=palette[0], linestyle='--')
+		cost_train_duration_plt, = plt.plot(epochs, self.cost_train_duration, color=palette[1], linestyle='-')
+		cost_valid_duration_plt, = plt.plot(epochs, self.cost_valid_duration, color=palette[1], linestyle='--')
 		plt.ylabel('Crossentropy Costs')
 		plt.xlabel('Epoch #')
 		plt.legend([cost_train_pitch_plt, cost_valid_pitch_plt, cost_train_duration_plt, cost_valid_duration_plt], ["Training Pitch", "Validation Pitch", "Training Duration", "Validation Duration"])
 		plt.grid('on')
-		if save_png_now:
-			plt.savefig(model_path + "_cost.png")
+		if save_now:
+			plt.savefig(model_path + "_cost" + fig_ext)
 		
 
 		# Horizontal weights plots
@@ -499,30 +492,30 @@ class MusicModelGRU(object):
 			new_fig_list += [plt.figure()]
 		else:
 			plt.figure(new_fig_list[2].number)
-		horz_update_plt, = plt.plot(epochs, self.horz_update_mean, color=pitch_color, linestyle=':')
-		horz_reset_plt, = plt.plot(epochs, self.horz_reset_mean, color=pitch_color, linestyle='--')
-		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_mean, color=pitch_color, linestyle='-')
+		horz_update_plt, = plt.plot(epochs, self.horz_update_mean, color=palette[0], linestyle='-')
+		horz_reset_plt, = plt.plot(epochs, self.horz_reset_mean, color=palette[1], linestyle='-')
+		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_mean, color=palette[2], linestyle='-')
 		plt.ylabel('Mean of Horizontal Weights')
 		plt.xlabel('Epoch #')
 		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
 		plt.grid('on')
-		if save_png_now:
-			plt.savefig(model_path + "_horzWeights_mean.png")
+		if save_now:
+			plt.savefig(model_path + "_horzWeights_mean" + fig_ext)
 
 		# Vertical weights plots
 		if fig_list is None:
 			new_fig_list += [plt.figure()]
 		else:
 			plt.figure(new_fig_list[3].number)
-		vert_update_plt, = plt.plot(epochs, self.vert_update_mean, color=pitch_color, linestyle=':')
-		vert_reset_plt, = plt.plot(epochs, self.vert_reset_mean, color=pitch_color, linestyle='--')
-		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_mean, color=pitch_color, linestyle='-')
+		vert_update_plt, = plt.plot(epochs, self.vert_update_mean, color=palette[0], linestyle='-')
+		vert_reset_plt, = plt.plot(epochs, self.vert_reset_mean, color=palette[1], linestyle='-')
+		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_mean, color=palette[2], linestyle='-')
 		plt.ylabel('Mean of Vertical Weights')
 		plt.xlabel('Epoch #')
 		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
 		plt.grid('on')
-		if save_png_now:
-			plt.savefig(model_path + "_vertWeights_mean.png")
+		if save_now:
+			plt.savefig(model_path + "_vertWeights_mean" + fig_ext)
 
 
 		# Horizontal weights plots
@@ -530,30 +523,30 @@ class MusicModelGRU(object):
 			new_fig_list += [plt.figure()]
 		else:
 			plt.figure(new_fig_list[4].number)
-		horz_update_plt, = plt.plot(epochs, self.horz_update_norm, color=pitch_color, linestyle=':')
-		horz_reset_plt, = plt.plot(epochs, self.horz_reset_norm, color=pitch_color, linestyle='--')
-		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_norm, color=pitch_color, linestyle='-')
+		horz_update_plt, = plt.plot(epochs, self.horz_update_norm, color=palette[0], linestyle='-')
+		horz_reset_plt, = plt.plot(epochs, self.horz_reset_norm, color=palette[1], linestyle='-')
+		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_norm, color=palette[2], linestyle='-')
 		plt.ylabel('Frobenius norm of Horizontal Weights')
 		plt.xlabel('Epoch #')
 		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
 		plt.grid('on')
-		if save_png_now:
-			plt.savefig(model_path + "_horzWeights_norm.png")
+		if save_now:
+			plt.savefig(model_path + "_horzWeights_norm" + fig_ext)
 
 		# Vertical weights plots
 		if fig_list is None:
 			new_fig_list += [plt.figure()]
 		else:
 			plt.figure(new_fig_list[5].number)
-		vert_update_plt, = plt.plot(epochs, self.vert_update_norm, color=pitch_color, linestyle=':')
-		vert_reset_plt, = plt.plot(epochs, self.vert_reset_norm, color=pitch_color, linestyle='--')
-		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_norm, color=pitch_color, linestyle='-')
+		vert_update_plt, = plt.plot(epochs, self.vert_update_norm, color=palette[0], linestyle='-')
+		vert_reset_plt, = plt.plot(epochs, self.vert_reset_norm, color=palette[1], linestyle='-')
+		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_norm, color=palette[2], linestyle='-')
 		plt.ylabel('Frobenius norm of Vertical Weights')
 		plt.xlabel('Epoch #')
 		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
 		plt.grid('on')
-		if save_png_now:
-			plt.savefig(model_path + "_vertWeights_norm.png")
+		if save_now:
+			plt.savefig(model_path + "_vertWeights_norm" + fig_ext)
 
 
 		# Horizontal weights plots
@@ -561,30 +554,30 @@ class MusicModelGRU(object):
 			new_fig_list += [plt.figure()]
 		else:
 			plt.figure(new_fig_list[6].number)
-		horz_update_plt, = plt.plot(epochs, self.horz_update_pos, color=pitch_color, linestyle=':')
-		horz_reset_plt, = plt.plot(epochs, self.horz_reset_pos, color=pitch_color, linestyle='--')
-		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_pos, color=pitch_color, linestyle='-')
+		horz_update_plt, = plt.plot(epochs, self.horz_update_pos, color=palette[0], linestyle='-')
+		horz_reset_plt, = plt.plot(epochs, self.horz_reset_pos, color=palette[1], linestyle='-')
+		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_pos, color=palette[2], linestyle='-')
 		plt.ylabel('Fraction of Positive values in Horizontal Weights')
 		plt.xlabel('Epoch #')
 		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
 		plt.grid('on')
-		if save_png_now:
-			plt.savefig(model_path + "_horzWeights_pos.png")
+		if save_now:
+			plt.savefig(model_path + "_horzWeights_pos" + fig_ext)
 
 		# Vertical weights plots
 		if fig_list is None:
 			new_fig_list += [plt.figure()]
 		else:
 			plt.figure(new_fig_list[7].number)
-		vert_update_plt, = plt.plot(epochs, self.vert_update_pos, color=pitch_color, linestyle=':')
-		vert_reset_plt, = plt.plot(epochs, self.vert_reset_pos, color=pitch_color, linestyle='--')
-		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_pos, color=pitch_color, linestyle='-')
+		vert_update_plt, = plt.plot(epochs, self.vert_update_pos, color=palette[0], linestyle='-')
+		vert_reset_plt, = plt.plot(epochs, self.vert_reset_pos, color=palette[1], linestyle='-')
+		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_pos, color=palette[2], linestyle='-')
 		plt.ylabel('Fraction of Positive values in Vertical Weights')
 		plt.xlabel('Epoch #')
 		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"])
 		plt.grid('on')
-		if save_png_now:
-			plt.savefig(model_path + "_vertWeights_pos.png")
+		if save_now:
+			plt.savefig(model_path + "_vertWeights_pos" + fig_ext)
 
 		return new_fig_list
 
@@ -719,7 +712,7 @@ class GRU_Network(MusicModelGRU):
 
 
 		### OUTPUT NETWORK ###
-		# Simple input layer that the GRU layer can feed it's hidden states to
+		# GRU layer
 		self.l_out_gru = GRULayer(l_in_intermediate, num_units=self.num_gru_layer_units, name='GRULayer', mask_input=l_in_mask)
 
 		# Dropout in output network
