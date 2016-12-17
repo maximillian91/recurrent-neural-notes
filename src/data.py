@@ -488,15 +488,15 @@ def write2table(table_file, model_num, dropout_p, use_l2_penalty, pitch_cost, du
 	with open(table_file + '.tex', "a") as text_file:
 		text_file.write("& {} & {} & {} & {:.2f} & {:.2f} & {:.1f} & {:.1f} \\\\ \n".format(model_num, dropout_p, use_l2_penalty, float(pitch_cost), float(duration_cost), 100.0*float(pitch_acc), 100.0*float(duration_acc)))
 
-def freqPrediction(train_data, test_data, mask):
-	data_ohe = np.delete(data_ohe, 0, 2)
-	NUM_FEATURES = data_ohe.shape[2]
-	print(NUM_FEATURES)
+# def freqPrediction(train_data, test_data, mask):
+# 	data_ohe = np.delete(data_ohe, 0, 2)
+# 	NUM_FEATURES = data_ohe.shape[2]
+# 	print(NUM_FEATURES)
 
-	flat_data = data_ohe.reshape((-1, NUM_FEATURES))
-	flat_mask = mask.flatten()
+# 	flat_data = data_ohe.reshape((-1, NUM_FEATURES))
+# 	flat_mask = mask.flatten()
 
-	feat_count = np.dot(flat_mask, flat_data)	
+# 	feat_count = np.dot(flat_mask, flat_data)	
 
 def main():
 	# path for pickled data files:
