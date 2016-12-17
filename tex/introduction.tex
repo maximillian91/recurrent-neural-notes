@@ -1,48 +1,24 @@
 \section{Introduction}
 \label{sec:introduction}
 
-\begin{description}
-	\item[Objective] We want to make a generative model for music notation using a recurrent neural network, inputting just a few notes, and getting a melody out.
-	
-	\item[Motivation] Several:
-	
-	\begin{itemize}
-		\item We wanted to work with RNNs.
-		
-		\item Our original plan was to work with electronic healthcare records (EHR), but the sequences were too short (order of unity).
-		
-		\item Music has rules for what sounds good: notes that go together (scales), repeating rhythms.
-		
-		\item We are both musicians (to greater or lesser degrees).
-	\end{itemize}
-	
-	\item[Proposal] We propose two models using RNNs using different structure.
-	
-	\item[Previous work] Using same data as us.
-	
-	\begin{description}
-		\item[Sturm] Uses character RNN from Andrey Karpathy to generate musical notation encoded in text format, getting reasonable results after correcting the generated codes.
-		
-		```Lisl's Stis': Recurrent Neural Networks for Folk Music Generation''
-		Bob L. Sturm (blog post from May 2015)
-		
-		\item[Zimmerman] Uses melody (pitch at every 16th beat) and harmony (chord at every 16th beat), getting accuracies of around 77 \%. Same network structure as ours.
-		
-		``A Dual Classification Approach to Music Language Modelling''
-		Zimmerman (2016)
-	\end{description}
-\end{description}
+Making great music comes natural to some, but is near impossible for others.
+To create music, rules have been set up for what sounds or \emph{tones} go great together, and this is called musical theory.
+Music is normally experienced as raw audio, but is simpler to represent it using musical notation.
+This is analogous to the relationship between speech and text.
+In musical notation, a tone is represented by a note which has a frequency called a \emph{pitch} as well as a \emph{duration}.
+The absence of tones is also important and is called a rest.
+Putting several notes and rests into a sequence makes a melody, and it helps using musical theory to do this.
 
-\subsection*{EHR synopsis}
+We have examined whether a recurrent neural network (RNN) can learn musical theory from several collections of folk music and recreate complete melodies and create new ones.
+To represent the melodies in the network, we were inspired by an article by Choi et al.\ on electronic health records \cite{Choi2015}. Herein, a patient's hospitalisation history is represented by a sequence of hospitalisations with a multi-hot encoding of diagnosis codes and medication codes for each hospitalisation as well as a sequence of durations for time between hospitalisations.
+In an RNN, the predicted hospitalisation codes and durations are then conditioned separately on both the earlier hospitalisation codes and the earlier durations.
+Based on this idea, the notes and rests could be represented as a sequence of one-hot encoded pitches (including no pitch for rests) as well as a sequence of durations of the notes and rests.
 
-Forecasting a patients health history from previous diagnoses is of huge interest for the medical science, as further development of diseases and complications can be avoided by choosing the right treatment in the right time. Today’s health registry databases are vast and still evolving, so models analysing all patients’s health history as a whole could help determine disease trajectories on a global scale.
+Another approach has been done by Zimmerman \cite{Zimmerman2016} by predicting pitch and possibly a chord every $n$th part of a beat using an RNN.
+Using the Nottingham Music Database \cite{NMD}, accuracies of about $\SI{77}{\%}$ are achieved.
+Chung et al.\ have also used the same data set in comparing RNNs with long short-term memory (LSTM) and gated recurrent units (GRU) as well as to a simple RNN using a $\tanh$ activation function \cite{Chung2014}, but only using the pitch values.
+They find that the simple RNN performs the best.
 
-We are moving closer to this goal with new breakthroughs in deep learning, but methods successful in analysing this data for prediction of future diseases and risk are not performing better than methods doctors use, even though doctors’s predictions are based on their expert knowledge and experience from a tiny subset of all patients in a database.
-
-We will work on applying deep learning for Electronic Health Records (EHR). More specifically, we will look at neural network architectures from the Deepr and Doctor AI articles for predicting future diagnoses, e.g., the term (birth week) of 90 000 pregnant women or the risk of evolving type 2 diabetes.
-
-The project is done in cooperation with Pers Lab (under Center for Basic Metabolic Research at University of Copenhagen and State Serum Institute (SSI)) as well as Ole Winther from the Cognitive Systems research section at DTU Compute.
-
-P. Nguyen et al.: “Deepr: A Convolutional Net for Medical Records”, July 2016.
-
-E. Choi et al.: “Doctor AI: Predicting Clinical Events via Recurrent Neural Networks”, November 2015.
+In this report, we present two models using RNN: one similar to the one used by Choi et al. \cite{Choi2015} and one using the previous output.
+We use these models on the Nottingham Music Database to reconstruct the melodies therein as well as sampling from them.
+We also examine using different kinds of regularisation on the models.
