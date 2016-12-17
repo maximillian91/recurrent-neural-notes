@@ -1,50 +1,22 @@
 \section{Data}
 \label{sec:data}
 
-\begin{description}
-	\item[Music representation] Which one to choose.
-	
-	\begin{description}
-		\item[Sound waves] frequencies and durations.
-		\item[Music notation] notes (pitch, duration) and rests (duration).
-		Compressed format of sound waves. Like sound to text.
-		\item[Sound spiral] angle (pitch in an octave), octave, duration.
-		\item[Others] \dots
-	\end{description}
-	
-	\item[Data set] Nottingham Music Database in ABC format
-	
-	\begin{itemize}
-		\item Nine collections: Jigs, hornpipes, Morris, Playford, reels, slip jigs, waltzes, Christmas, Ashover.
-		\item 1034 folk tunes.
-		
-		\begin{itemize}
-			\item 659 in training set (64 \%)
-			\item 165 in validation set (16 \%)
-			\item 207 in test set (20 \%)
-			\item 3 omitted due to bad formatting
-		\end{itemize}
-		
-		\item Example snippet of ABC format.
-	\end{itemize}
-	
-	\item[Features] Preprocessing.
-	
-	\begin{description}
-		\item[Conversion] to notes and rests.
-		\item[Extraction] of pitch and durations.
-		\item[One-hot encoding] 35 pitch values, 14 duration values, 490 combinations
-plus one end-of-sequence character.
-	\end{description}
-	
-	\item[Comparison to EHR] Electronic health records are can be encoded as one- or multi-hit encoding of
-	
-	\begin{itemize}
-		\item diagnosis codes and medicine codes at a visit,
-		\item duration between visits.
-	\end{itemize}
-\end{description}
+The Nottingham Music Database \cite{NMD} is encoded in \ABC notation, which is musical notation in text format \cite{ABC}.
+An example of \ABC notation can be seen at the top of Figure~\ref{fig:data:features}.
+It includes a total of $1034$ folk tunes divided into nine different collections based genres or composers.
+The folk tunes are separated into a training set of $659$ tunes, validation set of $165$ tunes, and a test set of $207$ tunes. Three tunes were omitted due to bad formatting.
 
-\subsection*{EHR synopsis}
+To use the tunes in the models,
+the tunes are first converted from the \ABC format to melodies with notes and rests.
+Then the pitches and duration are extracted from the sequence of notes and rests and put into a pitch sequence and a duration sequence, respectively.
+Rests are represented in the pitch sequence by a $0$.
+Finally, both sequences are one-hot encoded, which results in $35$ pitch values and $14$ duration values.
+An end-of-sequence character has also been included in both sequences.
+This preprocessing can also be seen in Figure~\ref{fig:data:features}.
 
-We use EHR from the Danish National Patient Register (`Landspatientregister' or LPR) and questionnaires from the Danish National Birth Cohort (`Bedre Sundhed for Mor og Barn' or BSMB) provided by SSI in ICD--10 diagnosis codes.
+\begin{figure}
+	\centering
+	\includegraphics[width=0.8\linewidth]{Features}
+	\caption{Features extraction.}
+	\label{fig:data:features}
+\end{figure}
