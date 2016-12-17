@@ -10,9 +10,9 @@
 % 	\item [Reconstructions] of test examples.
 % \end{description}
 
-The experiments were run for the normal RNN model using only original input and the extended RNN model using the previous prediction step output as input. 
+The experiments were run for model 1, the normal RNN model using only original input and model 2, the extended RNN model using the previous prediction step output as input to the next step.
 
-
+They are implemented in Python with the Theano and Lasagne library, using mini-batch gradient descent with the ADAM optimizer \cite{Kingma2014c}.  
 
 \subsection{Regularization} % (fold)
 \label{sub:regularization}
@@ -25,10 +25,9 @@ An $L_2$-regularization term is also added to the total cost during training for
 
 \subsection{Evaluation}
 
-The performance measures are the prediction accuracy and the two categorical cross entropy measures over pitch and duration classes are recorded for each epoch and seen in the learning curves.
+The prediction accuracy and categorical cross entropy for both classe are recorded for each epoch and seen in the learning curves in Figure \ref{fig:learning_curves} and \ref{fig:learning_curves_regularized}.
 
-Other measures used for model investigation are the mean, frobenius norm and positive value fractions over both the horizontal weights (hidden to hidden state) and vertical weights (input to hidden state), where the trend in the overall magnitude and sign of the weights are expected to be seen. \\ \\
-
+To investigate the connections in the GRU layer, the mean, frobenius norm and positive value fractions of horizontal and vertical weights, where the trend in the overall magnitude and sign of the weights are expected to be seen. \\ \\
 
 The two models with and without dropout and/or regularization are tested for 10, 25, 50, 75, and 100 gated recurrent units, so scaling of performance can be investigated and the effect of the regularization methods compared. The scaling of performance with the number of GRU are clearly seen, but not shown here, so 100 GRU are used as a standard and for these regularization methods and model architectures can be compared in Table \ref{tab:test_eval}.
 
@@ -111,7 +110,7 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
 
 \begin{figure*}
     \centering
-    \setkeys{Gin}{height=.25\textheight}
+    \setkeys{Gin}{height=.28\textheight}
 	\hspace*{\fill}
     \subbottom[\label{fig:histogram_orig:pitch}]{
         \includegraphics{orig_pitch_freq_barplot}
@@ -128,7 +127,7 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
 
 \begin{figure*}
     \centering
-    \setkeys{Gin}{height=.25\textheight}
+    \setkeys{Gin}{height=.28\textheight}
 	\hspace*{\fill}
     \subbottom[\label{fig:histogram_models:pitch}]{
         \includegraphics{models_pitch_freq_barplot}
