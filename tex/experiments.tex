@@ -37,7 +37,7 @@ All models are trained for 200 epochs, as a clear convergence in the learning cu
 
 After training, the models were evaluated on 2 test songs, handpicked out of the unseen test set. The notes in the original melody (input) are highlighted by colors corresponding to the GRU activations, so patterns, like scale and rhythmical motifs, leading to higher activation can be localized and the functionality of the GRU identified.
 
-To investigate the distribution of the pitch and duration classes, the frequencies of each class in the original data are represented in a histogram in Figure~\ref{fig:histogram_orig}
+To investigate the distribution of the pitch and duration classes, the frequencies of each class in the original data are represented in a histogram in Figure~\ref{fig:histogram}
 
 All reconstructions can be translated back to the \texttt{music21} format, written to a midi file, played, written as a musical score and compared against the original melody.
 
@@ -108,36 +108,28 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
 \end{figure*}
 
 
-\begin{figure*}
-    \centering
-    \setkeys{Gin}{height=.28\textheight}
-	\hspace*{\fill}
-    \subbottom[\label{fig:histogram_orig:pitch}]{
-        \includegraphics{orig_pitch_freq_barplot}
-    }
-    \hfill
-    \subbottom[\label{fig:histogram_orig:duration}]{
-        \includegraphics{orig_duration_freq_barplot}
-    }
-	\hspace*{\fill}
-    \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram_orig:pitch} and duration \subcaptionref{fig:histogram_orig:duration} classes.)
-    }
-    \label{fig:histogram_orig}
-\end{figure*}
+% \begin{figure*}
+%     \centering
+%     \setkeys{Gin}{height=.28\textheight}
+% 	\hspace*{\fill}
+%     \subbottom[\label{fig:histogram_orig:pitch}]{
+%         \includegraphics{orig_pitch_freq_barplot}
+%     }
+%     \hfill
+%     \subbottom[\label{fig:histogram_orig:duration}]{
+%         \includegraphics{orig_duration_freq_barplot}
+%     }
+% 	\hspace*{\fill}
+%     \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram_orig:pitch} and duration \subcaptionref{fig:histogram_orig:duration} classes.)
+%     }
+%     \label{fig:histogram_orig}
+% \end{figure*}
 
 \begin{figure*}
     \centering
-    \setkeys{Gin}{height=.28\textheight}
+    \setkeys{Gin}{height=.45\textheight}
 	\hspace*{\fill}
-    \subbottom[\label{fig:histogram_models:pitch}]{
-        \includegraphics{models_pitch_freq_barplot}
-    }
-    \hfill
-    \subbottom[\label{fig:histogram_models:duration}]{
-        \includegraphics{models_duration_freq_barplot}
-    }
-	\hspace*{\fill}
-    \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram_models:pitch} and duration \subcaptionref{fig:histogram_models:duration} classes.)
-    }
-    \label{fig:histogram_models}
+    \includegraphics{models_pitch_freq_barplot}
+    \caption{Histograms showing statistical frequency of pitch classes in the (blue) original data and in the (green) reconstructions produced by model type 2 with dropout of 50\% and $L_2$-regularization.}
+    \label{fig:histogram}
 \end{figure*}
