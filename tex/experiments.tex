@@ -77,35 +77,43 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
 
 \begin{figure*}
     \centering
+    \includegraphics[width = .90\linewidth]{acc_learning_curves}
 	\hspace*{\fill}
-    \subbottom[\label{fig:learning_curves:type1}]{
-        \includegraphics[width = .45\linewidth]{Normal_GRU_Network_gru_100_bs_10_e_200_acc}
-    }
-    \hfill
-    \subbottom[\label{fig:learning_curves:type2}]{
-        \includegraphics[width = .45\linewidth]{GRU_using_deterministic_previous_output_gru_100_bs_10_e_200_acc}
-    }
-	\hspace*{\fill}
-    \caption{Learning curves over next-step prediction accuracies for \subcaptionref{fig:learning_curves:type1} model type 1 and \subcaptionref{fig:learning_curves:type2} model type 2 without any regularization. The models are evaluated on both training (solid lines) and validation sets (dashed lines) and for pitch (turquoise) and duration classes (orange).)
-    }
+    \caption{Learning curves over next-step prediction accuracies for both model types with and without regularization. The models are evaluated on both training (solid lines) and validation sets (dashed lines) for pitch (turquoise) and duration classes (orange).}
     \label{fig:learning_curves}
 \end{figure*}
 
-\begin{figure*}
-    \centering
-	\hspace*{\fill}
-    \subbottom[\label{fig:learning_curves_regularized:type1}]{
-        \includegraphics[width = .45\linewidth]{GRU_using_deterministic_previous_output_with_50p_dropout_gru_100_bs_10_e_200_acc.pdf}
-    }
-    \hfill
-    \subbottom[\label{fig:learning_curves_regularized:type2}]{
-        \includegraphics[width = .45\linewidth]{Normal_GRU_Network_with_50p_dropout_gru_100_bs_10_e_200_acc}
-    }
-	\hspace*{\fill}
-    \caption{Learning curves over next-step prediction accuracies for \subcaptionref{fig:learning_curves_regularized:type1} model type 1 and \subcaptionref{fig:learning_curves_regularized:type2} model type 2, both with $50\%$ dropout. The models are evaluated on both training (solid lines) and validation sets (dashed lines) and for pitch (turquoise) and duration classes (orange).
-    }
-    \label{fig:learning_curves_regularized}
-\end{figure*}
+% \begin{figure*}
+%     \centering
+% 	\hspace*{\fill}
+%     \subbottom[\label{fig:learning_curves:type1}]{
+%         \includegraphics[width = .45\linewidth]{model_1_gru_100_bs_10_e_200_acc}
+%     }
+%     \hfill
+%     \subbottom[\label{fig:learning_curves:type2}]{
+%         \includegraphics[width = .45\linewidth]{model2_gru_100_bs_10_e_200_acc}
+%     }
+% 	\hspace*{\fill}
+%     \caption{Learning curves over next-step prediction accuracies for \subcaptionref{fig:learning_curves:type1} model type 1 and \subcaptionref{fig:learning_curves:type2} model type 2 without any regularization. The models are evaluated on both training (solid lines) and validation sets (dashed lines) and for pitch (turquoise) and duration classes (orange).)
+%     }
+%     \label{fig:learning_curves}
+% \end{figure*}
+
+% \begin{figure*}
+%     \centering
+% 	\hspace*{\fill}
+%     \subbottom[\label{fig:learning_curves_regularized:type1}]{
+%         \includegraphics[width = .45\linewidth]{model2_with_50p_dropout_gru_100_bs_10_e_200_acc.pdf}
+%     }
+%     \hfill
+%     \subbottom[\label{fig:learning_curves_regularized:type2}]{
+%         \includegraphics[width = .45\linewidth]{model_1_with_50p_dropout_gru_100_bs_10_e_200_acc}
+%     }
+% 	\hspace*{\fill}
+%     \caption{Learning curves over next-step prediction accuracies for \subcaptionref{fig:learning_curves_regularized:type1} model type 1 and \subcaptionref{fig:learning_curves_regularized:type2} model type 2, both with $50\%$ dropout. The models are evaluated on both training (solid lines) and validation sets (dashed lines) and for pitch (turquoise) and duration classes (orange).
+%     }
+%     \label{fig:learning_curves_regularized}
+% \end{figure*}
 
 
 % \begin{figure*}

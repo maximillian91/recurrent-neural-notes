@@ -89,8 +89,8 @@ def main():
 
 	n_colors = 10
  	palette = seaborn.color_palette(palette='muted', n_colors=n_colors, desat=None)
- 	pitch_palette = seaborn.color_palette(palette='husl', n_colors=n_colors, desat=None) 
- 	duration_palette = seaborn.color_palette(palette='husl', n_colors=n_colors, desat=0.5)
+ 	pitch_palette = seaborn.color_palette(palette='husl', n_colors=4, desat=None) 
+ 	duration_palette = seaborn.color_palette(palette='husl', n_colors=4, desat=0.5)
 
 	# TODO: DATA STATS - WORK IN PROGRESS - PERCENTAGES
 	rects_duration = dataStatsBarPlot(data_duration, data_mask, data_duration_map, palette, is_pitch=False, ax=ax_duration, bar_labels=True)
@@ -118,22 +118,23 @@ def main():
 
 	# Initialize model specs.
 	model_specs = []
-	# model_specs.append({'name': 'Normal_GRU_Network', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
-	model_specs.append({'name': 'Normal_GRU_Network', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
-	# # model_specs.append({'name': 'Normal_GRU_Network_1_with_20p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 50, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
-	# model_specs.append({'name': 'Normal_GRU_Network_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
-	model_specs.append({'name': 'Normal_GRU_Network_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
-	model_specs.append({'name': 'Normal_GRU_Network_with_l2', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
-	model_specs.append({'name': 'Normal_GRU_Network_with_l2_and_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
+	# model_specs.append({'name': 'model_1', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
+	model_specs.append({'name': 'model_1', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': True})
+	# # model_specs.append({'name': 'model_1_1_with_20p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 50, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
+	# model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
+	model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': True})
+	model_specs.append({'name': 'model_1_with_l2', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
+	model_specs.append({'name': 'model_1_with_l2_and_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
 
-	model_specs.append({'name': 'GRU_using_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
-	# model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_20p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
-	model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotActivationSeq': False, 'plotLearningCurves': False})
-	model_specs.append({'name': 'GRU_using_deterministic_previous_output_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
-	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
-	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output_with_l2', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
+	model_specs.append({'name': 'model_2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': True})
+	# model_specs.append({'name': 'model_2_with_20p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
+	model_specs.append({'name': 'model_2_with_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotActivationSeq': False, 'plotLearningCurves': False})
+	model_specs.append({'name': 'model_2_with_l2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})	
+	model_specs.append({'name': 'model_2_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
+	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
+	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output_with_l2', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True})
 
-	model_specs = [model_specs[0], model_specs[1], model_specs[4], model_specs[6]] #, model_specs[-2]]
+	#model_specs = [model_specs[0], model_specs[1], model_specs[4], model_specs[6]] #, model_specs[-2]]
 	# model_specs = [model_specs[-3]]
 
 	# model_names.append({'name': 'GRU_using_nondeterministic_previous_output_with_50p_dropout', 'use_deterministic_output': False, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 200, 'num_gru': 100})
@@ -141,6 +142,7 @@ def main():
 
 	plot_count = 0 
 	curve_handles = []
+	curve_names = []
 	fig_curves, ax_curves = plt.subplots(figsize=(9,6))
 
 	# Setup and train 
@@ -184,14 +186,14 @@ def main():
 
 		if plotLearningCurves and not NO_PLOTTING:
 			print "plotting learning curves of ", model_spec['name'], "\n"
-			plot_count += 1
 			if PLOT_ALL_LEARNING_CURVES:
-				fig_list = model.plotLearningCurves(std_palette, fig_list=None, save_now=True, model_num=plot_count, fig_ext='.pdf')
+				fig_list = model.plotLearningCurves(std_palette, fig_list=None, save_now=True, model_num=plot_count+1, fig_ext='.pdf')
 			else:
 				plt.figure(fig_curves.number)
-				curve_handle = plotLearningCurves(model, pitch_palette[plot_count], duration_palette[plot_count])
+				curve_handle = learningCurvesPlotter(model, pitch_palette[plot_count], duration_palette[plot_count])
 				curve_handles += [curve_handle[0]]
 				curve_names += [model_spec['name']]
+			plot_count += 1
 
 
 		# Plot the histogram over model reconstructions for total data set.
@@ -242,13 +244,13 @@ def main():
 
 
 
-def plotLearningCurves(model, pitch_color, duration_color):
+def learningCurvesPlotter(model, pitch_color, duration_color):
 	epochs = range(1, model.number_of_epochs_trained+1)
 
-	acc_train_pitch_plt, = plt.plot(epochs, model.acc_train_pitch, color=palette[0], linestyle='-')
-	acc_valid_pitch_plt, = plt.plot(epochs, model.acc_valid_pitch, color=palette[0], linestyle='--')
-	acc_train_duration_plt, = plt.plot(epochs, model.acc_train_duration, color=palette[1], linestyle='-')
-	acc_valid_duration_plt, = plt.plot(epochs, model.acc_valid_duration, color=palette[1], linestyle='--')
+	acc_train_pitch_plt, = plt.plot(epochs, model.acc_train_pitch, color=pitch_color, linestyle='-')
+	acc_valid_pitch_plt, = plt.plot(epochs, model.acc_valid_pitch, color=pitch_color, linestyle='--')
+	acc_train_duration_plt, = plt.plot(epochs, model.acc_train_duration, color=duration_color, linestyle='-')
+	acc_valid_duration_plt, = plt.plot(epochs, model.acc_valid_duration, color=duration_color, linestyle='--')
 
 	return [acc_train_pitch_plt, acc_valid_pitch_plt, acc_train_duration_plt, acc_valid_duration_plt]
 
