@@ -41,31 +41,29 @@ The input network merges the two class feature vectors, $\{\vec{x}\order{t}\idx{
 
 \subsection{Output network} % (fold)
 \label{sub:output_network}
-	The output network is 2 standard feedforward neural networks softmax activation functions for class probabilities. A neurones response to the hidden GRU states at time $t$ represents the probability of the next note at time $t+1$ belonging to a specific pitch class for the pitch network and duration class for the duration network.   
+	The output network is 2 standard feedforward neural networks with softmax activation functions for class probabilities. A neurones response to the hidden GRU states at time $t$ represents the probability of the next note at time $t+1$ belonging to a specific pitch class for the pitch network and duration class for the duration network.
 	The output function for class $k$ at time $t+1$ is:
 	\begin{equation}
 		f(\vec{x})\order{t+1}_k = s\left(\mat{W}_k \vec{h}\order{t} + \vec{b}\right)%\frac{\eup^{\vec{h}\order{t}}}{\sum^K_{k=1}}
 	\end{equation}
 	where $s(\vec{x})$ is the softmax activation function, $\vec{h}\order{t}$ are the hidden GRU activations at time step $t$. As $\vec{h}_t$ is a non-linear function of all previous notes $\vec{x}\order{t'<t}$ indirectly through the previous activation $\vec{h}\order{t-1}$ and of the current note $\vec{x}_t$ directly through the input network,    
 	
+	\subsection{Extended model} % (fold)
+	\label{sub:extended_model}
+		By plugging in the next-step prediction of the output network to the next step input of the GRU layer an extra loop is formed which transfers additional information about the previous step and penalizes the model more for prediction errors.  
+		Adding the most probable prediction $\tilde{\vec{x}}\order{t}$ from previous step to the original input, $\vec{x}\order{t}$ after weighting and transforming both through a ReLU dense layer will combine the new input $\hat{\vec{x}}\order{t}$, which will go into the activation functions in Equation~\eqref{gru:reset}-\eqref{gru:activation} in the exact same manner.
+	% subsection extended_model (end)
+
 	\subsection{Cost function} 
-	The categorical cross entropy loss function for example $n$ is:
+	The categorical cross entropy cost function for example $n$ is:
 	\begin{equation}
 		%L(\vec{x}\order{t}; \vec{f}) = \frac{1}{T}\sum^{T-1}_{t} \sum^{M}_{m} \left(\vec{x}_{m}\order{t+1} \log f(\vec{x}\order{t}) + \log(1-f(\vec{x}\order{t})  \right)
 		L_n(\vec{p}, \vec{q}) = -\sum^{M}_{m} p_{n,m} \log (q_{n,m})
 	\end{equation}
 	summed over all $M$ classes, where $\vec{p}$ is the one-hot-encoded targets $\vec{x}\order{t+1}$ at timesteps $t\in\{1, T\}$. $\vec{q}=f(\vec{x}_n)$ is the softmax output from the network taking input $\vec{x}\order{t+1}$ at timesteps $t\in\{0, T-1\}$. All timesteps are treated as seperate datapoints, so the targets and outputs are unrolled to a 2D $([N \times [T-1] \text{ by } M)$-array and the loss for each are averaged over, $n$, the first dimension, after masking out the steps outside the melodies.
 
-	
-
 % subsection output_network (end)
 
-	
-	\begin{enumerate}
-		\item One forwards layer using input and previous hidden state.
-		\item One forwards layer using previous output as well as previous hidden state.
-		\item Possibly One forwards layer using input and previous hidden state as well as previous hidden state.
-	\end{enumerate}
 
 \subsection*{EHR synopsis}
 

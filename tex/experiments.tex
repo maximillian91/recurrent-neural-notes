@@ -10,9 +10,6 @@
 % 	\item [Reconstructions] of test examples.
 % \end{description}
 
-
-\subsection{Model setup}
-
 The experiments were run for the normal RNN model using only original input and the extended RNN model using the previous prediction step output as input. 
 
 
@@ -33,7 +30,7 @@ The performance measures are the prediction accuracy and the two categorical cro
 Other measures used for model investigation are the mean, frobenius norm and positive value fractions over both the horizontal weights (hidden to hidden state) and vertical weights (input to hidden state), where the trend in the overall magnitude and sign of the weights are expected to be seen. \\ \\
 
 
-The two models with and without dropout and/or regularization are tested for 10, 25, 50, 75, and 100 gated recurrent units, so scaling of performance can be investigated and the effect of the regularization methods compared. The scaling of performance with the number of GRU are clearly seen, but not shown here, so 100 GRU are used as a standard and for these regularization methods and model architecture can be compared in Table \ref{tab:test_eval}.
+The two models with and without dropout and/or regularization are tested for 10, 25, 50, 75, and 100 gated recurrent units, so scaling of performance can be investigated and the effect of the regularization methods compared. The scaling of performance with the number of GRU are clearly seen, but not shown here, so 100 GRU are used as a standard and for these regularization methods and model architectures can be compared in Table \ref{tab:test_eval}.
 
 All models are trained for 200 epochs, as a clear convergence in the learning curves in Figure \ref{fig:learning_curves} and \ref{fig:learning_curves_regularized} were seen after 150 epochs of training. \\ \\
 
@@ -87,7 +84,7 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
     }
     \hfill
     \subbottom[\label{fig:learning_curves:type2}]{
-        \includegraphics[width = .45\linewidth]{Normal_GRU_Network_gru_100_bs_10_e_200_acc}
+        \includegraphics[width = .45\linewidth]{GRU_using_deterministic_previous_output_gru_100_bs_10_e_200_acc}
     }
 	\hspace*{\fill}
     \caption{Learning curves over next-step prediction accuracies for \subcaptionref{fig:learning_curves:type1} model type 1 and \subcaptionref{fig:learning_curves:type2} model type 2 without any regularization. The models are evaluated on both training (solid lines) and validation sets (dashed lines) and for pitch (turquoise) and duration classes (orange).)
@@ -99,17 +96,19 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
     \centering
 	\hspace*{\fill}
     \subbottom[\label{fig:learning_curves_regularized:type1}]{
-        \includegraphics[width = .45\linewidth]{Normal_GRU_Network_gru_100_bs_10_e_200_acc}
+        \includegraphics[width = .45\linewidth]{GRU_using_deterministic_previous_output_with_50p_dropout_gru_100_bs_10_e_200_acc.pdf}
     }
     \hfill
     \subbottom[\label{fig:learning_curves_regularized:type2}]{
-        \includegraphics[width = .45\linewidth]{Normal_GRU_Network_gru_100_bs_10_e_200_acc}
+        \includegraphics[width = .45\linewidth]{Normal_GRU_Network_with_50p_dropout_gru_100_bs_10_e_200_acc}
     }
 	\hspace*{\fill}
-    \caption{Learning curves over next-step prediction accuracies for \subcaptionref{fig:learning_curves_regularized:type1} model type 1 with $L_2$-regularization and $50\%$ dropout and \subcaptionref{fig:learning_curves_regularized:type2} model type 2 $L_2$-regularization and $50\%$ dropout. The models are evaluated on both training (solid lines) and validation sets (dashed lines) and for pitch (turquoise) and duration classes (orange).
+    \caption{Learning curves over next-step prediction accuracies for \subcaptionref{fig:learning_curves_regularized:type1} model type 1 and \subcaptionref{fig:learning_curves_regularized:type2} model type 2, both with $50\%$ dropout. The models are evaluated on both training (solid lines) and validation sets (dashed lines) and for pitch (turquoise) and duration classes (orange).
     }
     \label{fig:learning_curves_regularized}
 \end{figure*}
+
+
 
 
 
@@ -117,15 +116,32 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
     \centering
     \setkeys{Gin}{height=.25\textheight}
 	\hspace*{\fill}
-    \subbottom[\label{fig:histogram:pitch}]{
+    \subbottom[\label{fig:histogram_orig:pitch}]{
         \includegraphics{orig_pitch_freq_barplot}
     }
     \hfill
-    \subbottom[\label{fig:histogram:duration}]{
+    \subbottom[\label{fig:histogram_orig:duration}]{
         \includegraphics{orig_duration_freq_barplot}
     }
 	\hspace*{\fill}
-    \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram:pitch} and duration \subcaptionref{fig:histogram:duration} classes.)
+    \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram_orig:pitch} and duration \subcaptionref{fig:histogram_orig:duration} classes.)
+    }
+    \label{fig:histogram}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \setkeys{Gin}{height=.25\textheight}
+	\hspace*{\fill}
+    \subbottom[\label{fig:histogram_models:pitch}]{
+        \includegraphics{models_pitch_freq_barplot}
+    }
+    \hfill
+    \subbottom[\label{fig:histogram_models:duration}]{
+        \includegraphics{models_duration_freq_barplot}
+    }
+	\hspace*{\fill}
+    \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram_models:pitch} and duration \subcaptionref{fig:histogram_models:duration} classes.)
     }
     \label{fig:histogram}
 \end{figure*}

@@ -712,7 +712,7 @@ class GRU_Network(MusicModelGRU):
 
 
 		### OUTPUT NETWORK ###
-		# GRU layer
+		# A normal GRU layer
 		self.l_out_gru = GRULayer(l_in_intermediate, num_units=self.num_gru_layer_units, name='GRULayer', mask_input=l_in_mask)
 
 		# Dropout in output network
@@ -720,7 +720,7 @@ class GRU_Network(MusicModelGRU):
 		if self.out_dropout_p > 0:
 			l_out_intermediate = DropoutLayer(l_out_intermediate, rescale=False, p=self.out_dropout_p)
 
-		# We need to do some reshape voodo to connect a softmax layer to the decoder.
+		# We need to do some reshape voodo to connect a softmax layer.
 		# See http://lasagne.readthedocs.org/en/latest/modules/layers/recurrent.html#examples 
 		# In short this line changes the shape from 
 		# (batch_size, decode_len, num_dec_units) -> (batch_size*decodelen,num_dec_units). 
