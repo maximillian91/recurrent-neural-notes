@@ -1,6 +1,18 @@
 \section{Methods}
 \label{sec:method}
 
+We have developed two models:
+One based on ideas by Choi et al.\ \cite{Choi2015} and another extending this model by using the previous output of the model.
+Both models can be seen in Figure~\ref{fig:methods:models}.
+In the following, these models, the networks they use, and their cost function are described.
+
+\begin{figure*}
+	\centering
+	\includegraphics[width=0.8\textwidth]{Models}
+	\caption{The setup for both models. $\vec{x}\order{t}\idx{p}$ and $\vec{x}\order{t}\idx{d}$ are the one-hot encoded pitch and duration, respectively, at position $t + 1$ in each sequence. The black arrows represent connections in both models, green arrows represent connections which can be ignored in the extended model, and orange arrow represent connections present in only the extended model.}
+	\label{fig:methods:models}
+\end{figure*}
+
 \subsection{Conditional Distribution} % (fold)
 \label{sub:conditional_distribution}
 The next-step prediction of the output network will be based on the conditional distribution:
