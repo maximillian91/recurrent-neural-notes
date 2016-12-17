@@ -25,9 +25,9 @@ An $L_2$-regularization term is also added to the total cost during training for
 
 \subsection{Evaluation}
 
-The prediction accuracy and categorical cross entropy for both classe are recorded for each epoch and seen in the learning curves in Figure \ref{fig:learning_curves} and \ref{fig:learning_curves_regularized}.
+The prediction accuracy and categorical cross entropy for both classes are recorded for each epoch and seen in the learning curves in Figure \ref{fig:learning_curves} and \ref{fig:learning_curves_regularized}.
 
-To investigate the connections in the GRU layer, the mean, frobenius norm and positive value fractions of horizontal and vertical weights, where the trend in the overall magnitude and sign of the weights are expected to be seen. \\ \\
+To investigate the connections in the GRU layer, the mean, Frobenius norm and positive value fractions of horizontal and vertical weights, where the trend in the overall magnitude and sign of the weights are expected to be seen. \\ \\
 
 The two models with and without dropout and/or regularization are tested for 10, 25, 50, 75, and 100 gated recurrent units, so scaling of performance can be investigated and the effect of the regularization methods compared. The scaling of performance with the number of GRU are clearly seen, but not shown here, so 100 GRU are used as a standard and for these regularization methods and model architectures can be compared in Table \ref{tab:test_eval}.
 
@@ -37,14 +37,14 @@ All models are trained for 200 epochs, as a clear convergence in the learning cu
 
 After training, the models were evaluated on 2 test songs, handpicked out of the unseen test set. The notes in the original melody (input) are highlighted by colors corresponding to the GRU activations, so patterns, like scale and rhythmical motifs, leading to higher activation can be localized and the functionality of the GRU identified.
 
-To investigate the distribution of the pitch and duration classes, the frequencies of each class in the original data are represented in a histogram in Figure~\ref{fig:histogram}
+To investigate the distribution of the pitch and duration classes, the frequencies of each class in the original data are represented in a histogram in Figure~\ref{fig:histogram_orig}
 
 All reconstructions can be translated back to the \texttt{music21} format, written to a midi file, played, written as a musical score and compared against the original melody.
 
 \begin{table*}
     \centering
     \caption{
-        The test evalutation measures.
+        The test evaluation measures.
     }
     \label{tab:test_eval}
     % \setlength{\tabcolsep}{1em}
@@ -122,7 +122,7 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
 	\hspace*{\fill}
     \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram_orig:pitch} and duration \subcaptionref{fig:histogram_orig:duration} classes.)
     }
-    \label{fig:histogram}
+    \label{fig:histogram_orig}
 \end{figure*}
 
 \begin{figure*}
@@ -139,11 +139,5 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
 	\hspace*{\fill}
     \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram_models:pitch} and duration \subcaptionref{fig:histogram_models:duration} classes.)
     }
-    \label{fig:histogram}
+    \label{fig:histogram_models}
 \end{figure*}
-
-% \subsection*{EHR synopsis}
-
-% We expect our model to be able to predict future diagnoses better than baseline methods like logistic regression and the frequency baseline test given in Doctor AI. At the same time, the model will learn to recognise specific patterns in the patient history that will enhance the models predictive power. These patterns can be investigated and used as important markers for doctors to analyse the patient history and whether later complications can be expected and avoided.
-
-% In the worst-case scenario, we are not successful in achieving the above.
