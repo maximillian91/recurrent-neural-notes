@@ -9,23 +9,39 @@
 % 	\item[Evaluation] on test set as a table.
 % 	\item [Reconstructions] of test examples.
 % \end{description}
+
+
 \subsection{Model setup}
 
-The experiments were run for the normal RNN model using only original input and the extended RNN model using the previous prediction step output as input. For regularization, 20\% dropout was applied right before the GRU layer in the input network and right af the GRU layer in output network respectively in both model architectures. 50\% dropout was also applied right after the GRU layer in the normal RNN, but not in the extended model, as the recursive call of output network cannot work with nondeterministic outputs. 
+The experiments were run for the normal RNN model using only original input and the extended RNN model using the previous prediction step output as input. 
 
-The two models with and without dropout are tested for 10, 25, 50, 75, and 100 gated recurrent units, so scaling of performance can be investigated. 
 
-All are trained for 200 epochs, as a clear convergence in the performance measures were seen after 150 epochs of training. \\ \\
-\subsection{Performance measures}
+
+\subsection{Regularization} % (fold)
+\label{sub:regularization}
+
+Dropout of 20\% or 50\% was applied right before the GRU layer in the input network. By dropping out notes along the melodies, a lossy noise and therefore a completion task is introduced to the models, so during training the next-step prediction will rely more on the previous GRU activations $\vec{h}\idx{t-1}$ and the horizontal connections will be enhanced to make up for the missing input. The stronger horizontal connections will hopefully combine some more general musical rules and therefore reduce overfitting. 
+
+An $L_2$-regularization term is also added to the total cost during training for reducing overfitting.
+% subsection regularization (end)
+
+
+\subsection{Evaluation}
 
 The performance measures are the prediction accuracy and the two categorical cross entropy measures over pitch and duration classes are recorded for each epoch and seen in the learning curves.
 
 Other measures used for model investigation are the mean, frobenius norm and positive value fractions over both the horizontal weights (hidden to hidden state) and vertical weights (input to hidden state), where the trend in the overall magnitude and sign of the weights are expected to be seen. \\ \\
-\subsection{Evaluation and reconstructions}
+
+
+The two models with and without dropout and/or regularization are tested for 10, 25, 50, 75, and 100 gated recurrent units, so scaling of performance can be investigated and the effect of the regularization methods compared. The scaling of performance with the number of GRU are clearly seen, but not shown here, so 100 GRU are used as a standard and for these regularization methods and model architecture can be compared in Table \ref{tab:test_eval}.
+
+All models are trained for 200 epochs, as a clear convergence in the learning curves in Figure \ref{fig:learning_curves} and \ref{fig:learning_curves_regularized} were seen after 150 epochs of training. \\ \\
+
+\subsection{Reconstructions}
 
 After training, the models were evaluated on 2 test songs, handpicked out of the unseen test set. The notes in the original melody (input) are highlighted by colors corresponding to the GRU activations, so patterns, like scale and rhythmical motifs, leading to higher activation can be localized and the functionality of the GRU identified.
 
-To investigate the distribution of the pitch and duration classes, the frequencies of each class in the original data and the reconstructions of the full data set from each model are represented in a histogram in Figure~\ref{fig:learning_curves}
+To investigate the distribution of the pitch and duration classes, the frequencies of each class in the original data are represented in a histogram in Figure~\ref{fig:histogram}
 
 All reconstructions can be translated back to the \texttt{music21} format, written to a midi file, played, written as a musical score and compared against the original melody.
 
@@ -111,7 +127,7 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
 	\hspace*{\fill}
     \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram:pitch} and duration \subcaptionref{fig:histogram:duration} classes.)
     }
-    \label{fig:learning_curves}
+    \label{fig:histogram}
 \end{figure*}
 
 % \subsection*{EHR synopsis}
