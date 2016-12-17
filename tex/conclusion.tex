@@ -1,30 +1,20 @@
 \section{conclusion}
 \label{sec:conclusion}
 
-\begin{description}
-	\item[This report] What we did and found out.
-	
-	\begin{itemize}
-		\item We get accuracies of 90 \% and above for both models.
-		\item No vanishing gradients in either model.
-		\item The models can recognise and reconstruct:
-		\begin{itemize}
-			\item the key of the tune,
-			\item conjunct motion (the pitch difference), and
-			\item rhythm motifs.
-		\end{itemize}
-		\item The models can generate music by itself.
-	\end{itemize}
-	
-	\item[Future work] What we want to do and find out.
-	
-	\begin{description}
-		\item[Continuous encoding] Since some pitches harmonises better together than others depending on the differences in pitch, each would be easier for the model to learn the connection.
-		\item[Chords] Knowing which chord is playing, some pitches would be more probable than others.
-		\item[Positions in measures] This would help with rhythm. Similar to line breaks in text, but stronger, since some notes ought to fall on certain beats.
-		\item[Collections] Separating the style from the music theory with a semi-supervised variational auto-encoder.
-		\item[Backwards GRU layer] To better learn what comes next, it helps knowing what comes after. To use a second independent guess when predicting.
-		\item[Regularisation] Prevent overfitting.
-		\item[Musical sound and notation] Combine them as with speech and text. Synthesise different instruments playing.
-	\end{description}
-\end{description}
+We have developed two new models to reconstruct melodies.
+\change{Add comments about what the model can recognise and reconstruct (scale, conjunct motion, rhythm motifs)}
+The best version of these models have accuracies of around $\SI{37}{\%}$ for predicting pitches and of around $\SI{75}{\%}$ for predicting durations.
+\change{Add comments about versions.}
+By using the previous output, the extended model can also generate music.
+\change{Add comment about generating music.}
+
+There are several ways to possibly achieve better results.
+Instead of one-hot encoding the pitches and durations, we could instead use continuous encoding.
+The model would then be able to learn the differences in pitch, instead of learning where to go for each certain pitch.
+This would also make the model better learn the scale of the tune.
+Chords could also be included as Zimmerman \cite{Zimmerman2016} did, since depending on which chord is playing, some pitches would be more probable than others.
+Another thing to include are the positions in the each measure of the melody. This would essentially be a sum of the durations, and it would help with the rhythm, especially since some notes ought to fall on certain beats.
+Lastly, knowing which notes, the melody is build towards, would also aid the model, so a backwards GRU layer could also be added to the models.
+
+On a longer timescale, it would be interesting to extend the model to a semi-supervised variational auto-encoder and include the collections in the data set to separate genres from the melodies.
+The musical notation could also be combined with sound (as with speech and text) to be able to synthesise different instruments playing.
