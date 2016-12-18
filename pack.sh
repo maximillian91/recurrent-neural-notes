@@ -17,5 +17,3 @@ cp presentation.pdf $ASSIGNMENT/$ASSIGNMENT-Presentation.pdf
 zip -r ../$ASSIGNMENT.zip $ASSIGNMENT
 
 rm -rf $ASSIGNMENT
-
-cp Report/assignment2.pdf ../$ASSIGNMENT.pdf
