@@ -70,9 +70,9 @@ The input network merges the two one-hot-encoded class vectors into the two-hot-
 	The categorical cross entropy cost function for example $n$ is:
 	\begin{equation}
 		%L(\vec{x}\order{t}; \vec{f}) = \frac{1}{T}\sum^{T-1}_{t} \sum^{M}_{m} \left(\vec{x}_{m}\order{t+1} \log f(\vec{x}\order{t}) + \log(1-f(\vec{x}\order{t})  \right)
-		L_n(\vec{p}, \vec{q}) = -\sum^{P}_{p} \vec{x}\order{t+1}\idx{p} \log p\left(\tilde{\vec{x}}\order{t+1}\idx{p}|\vec{x}\order{t'\le t}\right)
+		L_n = -\sum^{T-1}_{t}\sum^{K}_{k} \vec{x}\order{t+1}\idx{k} \log p\left(\tilde{\vec{x}}\order{t+1}\idx{k}|\vec{x}\order{t'\le t}\right)
 	\end{equation}
-	summed over all $P$ classes, where $\vec{p}$ is the one-hot-encoded targets $\vec{x}\order{t+1}$ at timesteps $t\in\{1, T\}$. $\vec{q}=f(\vec{x}_n)$ is the softmax output from the network taking input $\vec{x}\order{t+1}$ at timesteps $t\in\{0, T-1\}$. All timesteps are treated as seperate datapoints, so the targets and outputs are unrolled to a 2D $([N \times [T-1] \text{ by } M)$-array and the loss for each are averaged over, $n$, the first dimension, after masking out the steps outside the melodies.
+	summed over all $K$ classes and timesteps except the last, $T$. All timesteps are treated as seperate datapoints, so the targets and outputs are unrolled and the loss for each are averaged over the examples, $n$, in the mini-batch, after masking out the steps outside the melodies. 
 
 % subsection output_network (end)
 
