@@ -61,7 +61,7 @@ The input network merges the two class feature vectors, $\vec{x}\order{t}\idx{p}
 	\subsection{Extended model} % (fold)
 	\label{sub:extended_model}
 		By plugging in the next-step prediction of the output network to the next step input of the GRU layer an extra loop is formed which transfers additional information about the previous step and penalizes the model more for prediction errors.  
-		Adding the most probable prediction $\tilde{\vec{x}}\order{t}$ from previous step to the original input, $\vec{x}\order{t}$ after weighting and transforming both through a ReLU dense layer will combine the new input $\hat{\vec{x}}\order{t}$, which will go into the activation functions in Equation~\eqref{gru:reset}-\eqref{gru:activation} in the exact same manner.
+		Adding the most probable prediction $\tilde{\vec{x}}\order{t}$ from previous step to the original input, $\vec{x}\order{t}$ after weighting and transforming both through a ReLU dense layer will combine the new input $\hat{\vec{x}}\order{t}$, which will go into the activation functions in Equation~\eqref{gru:reset}-\eqref{gru:activation} in the exact same manner. This model is also referred to as model 2 and the normal model as model 1. 
 	% subsection extended_model (end)
 
 	\subsection{Cost function} 

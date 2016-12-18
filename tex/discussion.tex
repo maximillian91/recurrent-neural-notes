@@ -3,11 +3,13 @@
 
 Convergence of learning curves.
 
+By comparing the learning curves in Figure~\ref{fig:learning_curves}, all models converge after 150 epochs and starts overfitting after around 20 epochs of training even with regularization. The regularization does seem to lower overfitting somewhat, when validation curves move up and training curves down in accuracy, like e.g.\ for model 2 with $L_2$ regularization and dropout, where the overall span and area between the (purple) curves is lower. So model 2 seems to generalize better than model 1, but the difference is so marginal, that they could almost be the same model.
+
+As mentioned in the experimental setup, model 2 could be forced to not reducing into model 1, by only providing the previous output as input, but following the test results for model 3 in Table~\ref{tab:test_eval} this seems to handicap model 2 a lot.  
+
 Final values for learning curves.
 
-Overfitting at certain points and remedies for this.
-
-Vanishing gradients by looking at weights.
+To validate whether gradients vanish through backpropagation, the weights are investigated in Appendix~\ref{sec:gru_weights}, where it is seen that the frobenius norm of the weight matrices keep on increasing and the mean varying gradually, so the weights are adjusted during training. 
 
 Comparison of learning curves and evaluations on test set.
 

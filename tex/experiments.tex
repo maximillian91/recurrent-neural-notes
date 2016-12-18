@@ -20,6 +20,7 @@ They are implemented in Python with the Theano and Lasagne library, using mini-b
 Dropout of 20\% or 50\% was applied right before the GRU layer in the input network. By dropping out notes along the melodies, a lossy noise and therefore a completion task is introduced to the models, so during training the next-step prediction will rely more on the previous GRU activations $\vec{h}\idx{t-1}$ and the horizontal connections will be enhanced to make up for the missing input. The stronger horizontal connections will hopefully combine some more general musical rules and therefore reduce overfitting. 
 
 An $L_2$-regularization term is also added to the total cost during training for reducing overfitting.
+
 % subsection regularization (end)
 
 
@@ -31,11 +32,13 @@ To investigate the connections in the GRU layer, the mean, Frobenius norm and po
 
 The two models with and without dropout and/or regularization are tested for 10, 25, 50, 75, and 100 gated recurrent units, so scaling of performance can be investigated and the effect of the regularization methods compared. The scaling of performance with the number of GRU are clearly seen, but not shown here, so 100 GRU are used as a standard and for these regularization methods and model architectures can be compared in Table \ref{tab:test_eval}.
 
+The only difference between the two models is the usage of the previous output, so if wrong prediction in the previous output leads to higher misclassication in the next step a lavine of misclassifications roll along the sequence. So during training the model would gain the lowest cost by just lowering the connection throughput of the previous output and finally reduce model 2 to model 1. To avoid this a model 3 without any original input, except the first note to kickstart it, was tested with and without $L_2$ regularization in the last 2 rows of Table \ref{tab:test_eval}. 
+
 All models were trained for 200 epochs, as they reaches convergence after 150 epochs in the learning curves seen in Figure \ref{fig:learning_curves}\\ \\
 
 \subsection{Reconstructions}
 
-After training, the models were evaluated on 2 test songs, handpicked out of the unseen test set. The notes in the original melody (input) are highlighted by colors corresponding to the GRU activations, so patterns, like scale and rhythmical motifs, leading to higher activation can be localized and the functionality of the GRU identified.
+After training, the models were evaluated on 1 test song, handpicked out of the unseen test set. In Appendix~\ref{sec:gru_activations} the notes in the original melody are highlighted by colors corresponding to the GRU activations, so patterns, like scale and rhythmical motifs, leading to higher activation can be localized and the functionality of the GRU identified.
 
 To investigate the distribution of the pitch and duration classes, the frequencies of each class in the original data are represented in a histogram in Figure~\ref{fig:histogram}
 
@@ -82,59 +85,16 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
     \label{fig:learning_curves}
 \end{figure*}
 
-% \begin{figure*}
-%     \centering
-% 	\hspace*{\fill}
-%     \subbottom[\label{fig:learning_curves:type1}]{
-%         \includegraphics[width = .45\linewidth]{model_1_gru_100_bs_10_e_200_acc}
-%     }
-%     \hfill
-%     \subbottom[\label{fig:learning_curves:type2}]{
-%         \includegraphics[width = .45\linewidth]{model2_gru_100_bs_10_e_200_acc}
-%     }
-% 	\hspace*{\fill}
-%     \caption{Learning curves over next-step prediction accuracies for \subcaptionref{fig:learning_curves:type1} model type 1 and \subcaptionref{fig:learning_curves:type2} model type 2 without any regularization. The models are evaluated on both training (solid lines) and validation sets (dashed lines) and for pitch (turquoise) and duration classes (orange).)
-%     }
-%     \label{fig:learning_curves}
-% \end{figure*}
-
-% \begin{figure*}
-%     \centering
-% 	\hspace*{\fill}
-%     \subbottom[\label{fig:learning_curves_regularized:type1}]{
-%         \includegraphics[width = .45\linewidth]{model2_with_50p_dropout_gru_100_bs_10_e_200_acc.pdf}
-%     }
-%     \hfill
-%     \subbottom[\label{fig:learning_curves_regularized:type2}]{
-%         \includegraphics[width = .45\linewidth]{model_1_with_50p_dropout_gru_100_bs_10_e_200_acc}
-%     }
-% 	\hspace*{\fill}
-%     \caption{Learning curves over next-step prediction accuracies for \subcaptionref{fig:learning_curves_regularized:type1} model type 1 and \subcaptionref{fig:learning_curves_regularized:type2} model type 2, both with $50\%$ dropout. The models are evaluated on both training (solid lines) and validation sets (dashed lines) and for pitch (turquoise) and duration classes (orange).
-%     }
-%     \label{fig:learning_curves_regularized}
-% \end{figure*}
-
-
-% \begin{figure*}
-%     \centering
-%     \setkeys{Gin}{height=.28\textheight}
-% 	\hspace*{\fill}
-%     \subbottom[\label{fig:histogram_orig:pitch}]{
-%         \includegraphics{orig_pitch_freq_barplot}
-%     }
-%     \hfill
-%     \subbottom[\label{fig:histogram_orig:duration}]{
-%         \includegraphics{orig_duration_freq_barplot}
-%     }
-% 	\hspace*{\fill}
-%     \caption{Histograms showing statistical frequency of pitch \subcaptionref{fig:histogram_orig:pitch} and duration \subcaptionref{fig:histogram_orig:duration} classes.)
-%     }
-%     \label{fig:histogram_orig}
-% \end{figure*}
-
 \begin{figure*}
     \centering
     \includegraphics[width=.8\textwidth]{models_pitch_freq_barplot}
     \caption{Histograms showing statistical frequency of pitch classes in the (blue) original data and in the (green) reconstructions produced by model type 2 with dropout of 50\% and $L_2$-regularization.}
     \label{fig:histogram}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=.8\textwidth]{Reconstructions_cut}
+    \caption{First 4 bars of notes in the melody, Fiddle Hill Jig, for original data and reconstructions produced by model 1 with dropout of 50\% and by model 2 with dropout of 50\% and $L_2$-regularization.}
+    \label{fig:reconstructions}
 \end{figure*}

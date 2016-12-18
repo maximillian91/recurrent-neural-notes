@@ -116,23 +116,23 @@ def main():
 	NUM_GRU_LAYER_UNITS, BATCH_SIZE, NUM_EPOCHS = 25, 10, 0
 	NO_TRAINING = True
 	NO_PLOTTING = False
-	PLOT_ALL_LEARNING_CURVES = False
+	PLOT_ALL_LEARNING_CURVES = True
 
 	# Initialize model specs.
 	model_specs = []
-	# model_specs.append({'name': 'model_1', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
+	# model_specs.append({'name': 'model_1', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
 	model_specs.append({'name': 'model_1', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
-	# # model_specs.append({'name': 'model_1_1_with_20p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 50, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
+	# # model_specs.append({'name': 'model_1_1_with_20p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 50, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
 	# model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
-	model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True, 'plotActivationSeq': True, 'write2midi': True})
+	model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True, 'plotActivationSeq': True, 'write2midi': False})
 	model_specs.append({'name': 'model_1_with_l2', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
 	model_specs.append({'name': 'model_1_with_l2_and_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
 
 	model_specs.append({'name': 'model_2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
 	# model_specs.append({'name': 'model_2_with_20p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
 	model_specs.append({'name': 'model_2_with_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotActivationSeq': False, 'plotLearningCurves': False})
-	model_specs.append({'name': 'model_2_with_l2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})	
-	model_specs.append({'name': 'model_2_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': False, 'plotLearningCurves': True, 'write2midi': True})
+	model_specs.append({'name': 'model_2_with_l2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
+	model_specs.append({'name': 'model_2_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': False, 'plotLearningCurves': True, 'write2midi': False})
 	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
 	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output_with_l2', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
 
@@ -191,11 +191,10 @@ def main():
 			print "plotting learning curves of ", prettyString(model_spec['name']), "\n"
 			if PLOT_ALL_LEARNING_CURVES:
 				fig_list = model.plotLearningCurves(std_palette, fig_list=None, save_now=True, model_num=plot_count+1, fig_ext='.pdf')
-			else:
-				plt.figure(fig_curves.number)
-				curve_handle += learningCurvesPlotter(model, pitch_palette[plot_count], duration_palette[plot_count])
-				curve_handles += [curve_handle[4*plot_count]]
-				curve_names += [prettyString(model_spec['name'])]
+			plt.figure(fig_curves.number)
+			curve_handle += learningCurvesPlotter(model, pitch_palette[plot_count], duration_palette[plot_count])
+			curve_handles += [curve_handle[4*plot_count]]
+			curve_names += [prettyString(model_spec['name'])]
 			plot_count += 1
 
 
@@ -238,8 +237,8 @@ def main():
 
 	plt.figure(fig_curves.number)
 	plt.ylabel('Accuracies')
-	plt.xlabel('Epoch #')
-	plt.legend(curve_handles + curve_handle[:4], curve_names + ["Training pitch", "Validation pitch", "Training duration", "Validation duration"], loc="best", ncol=2)
+	plt.xlabel('Epochs')
+	plt.legend(curve_handles + curve_handle[:4], curve_names + ["Training pitch", "Validation pitch", "Training duration", "Validation duration"], loc="best", ncol=2, fontsize=10)
 	plt.grid('on')	
 	plt.savefig("../data/models/" + "acc_learning_curves.pdf")
 
