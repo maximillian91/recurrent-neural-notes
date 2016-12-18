@@ -77,8 +77,7 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
 
 \begin{figure*}
     \centering
-    \includegraphics[width = .90\linewidth]{acc_learning_curves}
-	\hspace*{\fill}
+    \includegraphics[width = .80\linewidth]{acc_learning_curves}
     \caption{Learning curves over next-step prediction accuracies for both model types with and without regularization. The models are evaluated on both training (solid lines) and validation sets (dashed lines) for pitch (turquoise) and duration classes (orange).}
     \label{fig:learning_curves}
 \end{figure*}
@@ -135,9 +134,7 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
 
 \begin{figure*}
     \centering
-    \setkeys{Gin}{height=.45\textheight}
-	\hspace*{\fill}
-    \includegraphics{models_pitch_freq_barplot}
+    \includegraphics[width=.8\textwidth]{models_pitch_freq_barplot}
     \caption{Histograms showing statistical frequency of pitch classes in the (blue) original data and in the (green) reconstructions produced by model type 2 with dropout of 50\% and $L_2$-regularization.}
     \label{fig:histogram}
 \end{figure*}
