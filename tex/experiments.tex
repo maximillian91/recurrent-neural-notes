@@ -17,7 +17,7 @@ They are implemented in \Python with the \Theano and \Lasagne modules using mini
 \subsection{Regularisation} % (fold)
 \label{sub:regularization}
 
-Dropout of $\SI{20}{\%}$ or $\SI{50}{\%}$ was applied right before the GRU layer in the input network. By dropping out notes along the melodies, a lossy noise and therefore a completion task is introduced to the models, so during training the next-step prediction will rely more on the previous GRU activations $\vec{h}\idx{t-1}$ and the horizontal connections will be enhanced to make up for the missing input. The stronger horizontal connections will hopefully combine some more general musical rules and therefore reduce overfitting. 
+Dropout of $\SI{20}{\%}$ or $\SI{50}{\%}$ was applied right before the GRU layer in the input network. By dropping out notes along the melodies, a lossy noise and therefore a completion task is introduced to the models, so during training the next-step prediction will rely more on the previous GRU activations $\vec{h}\order{t-1}$ and the horizontal connections will be enhanced to make up for the missing input. The stronger horizontal connections will hopefully combine some more general musical rules and therefore reduce overfitting. 
 
 An $L_2$-regularisation term is also added to the total cost during training to also reduce overfitting.
 
@@ -35,11 +35,11 @@ The prediction accuracies for both pitches and durations are recorded for each e
     \label{fig:learning_curves}
 \end{figure*}
 
-To investigate the connections in the GRU layer, the mean, Frobenius norm and positive-value fractions of horizontal and vertical weights, which are expected to show the trend in the overall magnitude and sign of the weights.
+To investigate the connections in the GRU layer, the mean, Frobenius norm and positive-value fractions of horizontal and vertical weights are recorded and shown in Appendix~\ref{sec:gru_weights}, which are expected to show the trend in the overall magnitude and sign of the weights.
 
 The two first models have been tested with and without dropout as well as with and without regularisation for $10$, $25$, $50$, $75$, and $100$ gated recurrent units, so scaling of performance can be investigated and the effect of the regularisation methods compared.
 The third model was tested with and without $L_2$ regularisation.
-The scaling of performance with the number of GRU are clearly seen, but not included here, so $100$ GRU are used as a standard and for these regularisation methods and model architectures can be compared for test set in Table~\ref{tab:test_eval}.
+The scaling of performance with the number of GRU are clearly seen, but not included here, so $100$ GRU are used as a standard and for these regularisation methods and model architectures can be compared for the test set in Table~\ref{tab:test_eval}.
 
 \begin{table}
     \centering
