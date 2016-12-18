@@ -33,7 +33,7 @@ The input network merges the two one-hot-encoded class vectors into the two-hot-
 \subsection{Recurrent neural network} % (fold)
 \label{sub:recurrent_neural_network}
 	The main part of the models is the recurrent neural network in the centre transferring temporal information from the input network to the output network.
-	To enhance the long term memory, gated recurrent units (GRUs) are used. These are receiving $\vec{x}\order{t}$ for each step, $t$, in the melody. Each GRU run through the melody step by step, as in \cite{Chung2014}, calculating the hidden activations recursively by the activation functions:
+	To enhance the long term memory, gated recurrent units (GRUs) are used. These are receiving $\vec{x}\order{t}$ for each step, $t$, in the melody. Each GRU run through the melody step by step as Chung et al.\ \cite{Chung2014}, calculating the hidden activations recursively by the activation functions:
 	\begin{alignat}{2}
 	 	& \text{Reset:} \; & \vec{r}\order{t} &= \sigma_r\left(\vec{x}\order{t} \mat{W}_{xr} + \vec{h}\order{t-1} \mat{W}_{hr} + \vec{b}_r\right) \label{gru:reset} \\
         & \text{Update:} \; & \vec{u}\order{t} &= \sigma_u\left(\vec{x}\order{t} \mat{W}_{xu} + \vec{h}\order{t-1} \mat{W}_{hu} + \vec{b}_u\right) \label{gru:update} \\

@@ -12,7 +12,8 @@
 
 The experiments were run for model 1, the normal RNN model using only original input and model 2, the extended RNN model using the previous prediction step output as input to the next step.
 
-They are implemented in \Python with the \Theano and \Lasagne modules using mini-batch gradient descent with the Adam optimiser \cite{Kingma2014c} with a batch size of $10$ and learning rate of $0.005$.  
+The models and the experiments have been implemented in \Python with the \Theano and \Lasagne modules using mini-batch gradient descent with the Adam optimiser \cite{Kingma2014c} with a batch size of $10$ and learning rate of $0.005$.
+The code is available on GitHub\footnote{\url{https://github.com/maximillian91/recurrent-neural-notes}.}.
 
 \subsection{Regularisation} % (fold)
 \label{sub:regularization}
@@ -35,7 +36,7 @@ The prediction accuracies for both pitches and durations are recorded for each e
     \label{fig:learning_curves}
 \end{figure*}
 
-To investigate the connections in the GRU layer, the mean, Frobenius norm and positive-value fractions of horizontal and vertical weights are recorded and shown in Appendix~\ref{sec:gru_weights}, which are expected to show the trend in the overall magnitude and sign of the weights.
+To investigate the connections in the GRU layer, the mean, Frobenius norm and positive-value fractions of horizontal and vertical weights are recorded (and shown in Appendix~\ref{sec:gru_weights}), which are expected to show the trend in the overall magnitude and sign of the weights.
 
 The two first models have been tested with and without dropout as well as with and without regularisation for $10$, $25$, $50$, $75$, and $100$ gated recurrent units, so scaling of performance can be investigated and the effect of the regularisation methods compared.
 The third model was tested with and without $L_2$ regularisation.

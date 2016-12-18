@@ -79,7 +79,7 @@
 \flushbottom
 
 % Title
-\setlength{\droptitle}{-\onelineskip}
+\setlength{\droptitle}{-1\onelineskip}
 \newcommand{\course}[1]{\gdef\thecourse{#1}}
 \newcommand{\thecourse}{}
 \newcommand{\affiliation}[1]{\gdef\theaffiliation{#1}}
