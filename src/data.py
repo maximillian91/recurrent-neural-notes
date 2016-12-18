@@ -10,8 +10,8 @@ from PIL import Image, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
 import seaborn
 from fractions import Fraction
-seaborn.set(style='ticks', palette='Set2')
 seaborn.set_context("paper")
+seaborn.set(style='ticks', palette='Set2')
 
 def ensure_dir(f):
     d = os.path.dirname(f)
@@ -295,7 +295,7 @@ def Stream2Img(name, stream, activations):
 	fnt = ImageFont.truetype('System/Library/Fonts/Menlo.ttc', 12)
 
 	for gru in range(NUM_GRU):
-		txt = Image.new('RGBA', (600,500), (255,255,255,0))
+		txt = Image.new('RGBA', (400,500), (255,255,255,0))
 		# get a drawing context
 		d = ImageDraw.Draw(txt)
 		string_width, string_height = d.textsize("CCCCC", font=fnt)
@@ -408,6 +408,10 @@ def load_data(data_file="data", partition_file="partition", train_partition=0.8)
 	return data_ohe, data
 
 def dataStatsBarPlot(data_ohe, mask, ind2feat_map, palette, is_pitch=False, ax=None, rects_list=None, bar_labels=False):
+	seaborn.set_context("paper")	
+	seaborn.set(style='ticks', palette='Set2')
+	
+
 	if ax is None:
 		fig, ax = plt.subplots(figsize=(9,6))
 
@@ -476,7 +480,7 @@ def dataStatsBarPlot(data_ohe, mask, ind2feat_map, palette, is_pitch=False, ax=N
 			else:
 				height = feat_count[i]
 			if height < 1000:
-				ax.text(rect.get_x() + rect.get_width()/2., 0.001+rect.get_height(), '{:.5g}'.format(height), ha='center', va='bottom', fontsize=8)
+				ax.text(rect.get_x() + rect.get_width()/2., 0.001+rect.get_height(), '{:.5g}'.format(height), ha='center', va='bottom', fontsize=10)
 
 	if bar_labels:
 		for rects in rects_list:

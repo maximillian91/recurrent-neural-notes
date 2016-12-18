@@ -18,7 +18,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn
 seaborn.set(style='ticks', palette='Set2')
-seaborn.set_context("paper")
+seaborn.set_context("talk")
 
 
 ####### RNN Models for folk music composition ########
@@ -449,7 +449,8 @@ class MusicModelGRU(object):
 	def plotLearningCurves(self, palette, fig_list=None, save_now=True, model_num=0, fig_ext='.png'):
 		model_path = self.model_data_path + self.model_name + "_gru_{}_bs_{}_e_{}".format(self.num_gru_layer_units, self.batch_size, self.number_of_epochs_trained)
 		epochs = range(1, self.number_of_epochs_trained+1)
-
+		seaborn.set_context("talk")
+		seaborn.set(style='ticks', palette='Set2')
 		if fig_list is None:
 			new_fig_list = []
 		else:
@@ -466,7 +467,7 @@ class MusicModelGRU(object):
 		acc_train_duration_plt, = plt.plot(epochs, self.acc_train_duration, color=palette[1], linestyle='-')
 		acc_valid_duration_plt, = plt.plot(epochs, self.acc_valid_duration, color=palette[1], linestyle='--')
 		plt.ylabel('Accuracies')
-		plt.xlabel('Epoch #')
+		plt.xlabel('Epochs')
 		plt.legend([acc_train_pitch_plt, acc_valid_pitch_plt, acc_train_duration_plt, acc_valid_duration_plt], ["Training Pitch", "Validation Pitch", "Training Duration", "Validation Duration"], loc='best')
 		plt.grid('on')
 		if save_now:
@@ -482,7 +483,7 @@ class MusicModelGRU(object):
 		cost_train_duration_plt, = plt.plot(epochs, self.cost_train_duration, color=palette[1], linestyle='-')
 		cost_valid_duration_plt, = plt.plot(epochs, self.cost_valid_duration, color=palette[1], linestyle='--')
 		plt.ylabel('Crossentropy Costs')
-		plt.xlabel('Epoch #')
+		plt.xlabel('Epochs')
 		plt.legend([cost_train_pitch_plt, cost_valid_pitch_plt, cost_train_duration_plt, cost_valid_duration_plt], ["Training Pitch", "Validation Pitch", "Training Duration", "Validation Duration"], loc='best')
 		plt.grid('on')
 		if save_now:
@@ -498,8 +499,8 @@ class MusicModelGRU(object):
 		horz_reset_plt, = plt.plot(epochs, self.horz_reset_mean, color=palette[1], linestyle='-')
 		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_mean, color=palette[2], linestyle='-')
 		plt.ylabel('Mean of Horizontal Weights')
-		plt.xlabel('Epoch #')
-		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"], loc='best')
+		plt.xlabel('Epochs')
+		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate"], loc='best')
 		plt.grid('on')
 		if save_now:
 			plt.savefig(model_path + "_horzWeights_mean" + fig_ext)
@@ -513,8 +514,8 @@ class MusicModelGRU(object):
 		vert_reset_plt, = plt.plot(epochs, self.vert_reset_mean, color=palette[1], linestyle='-')
 		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_mean, color=palette[2], linestyle='-')
 		plt.ylabel('Mean of Vertical Weights')
-		plt.xlabel('Epoch #')
-		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"], loc='best')
+		plt.xlabel('Epochs')
+		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate"], loc='best')
 		plt.grid('on')
 		if save_now:
 			plt.savefig(model_path + "_vertWeights_mean" + fig_ext)
@@ -529,8 +530,8 @@ class MusicModelGRU(object):
 		horz_reset_plt, = plt.plot(epochs, self.horz_reset_norm, color=palette[1], linestyle='-')
 		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_norm, color=palette[2], linestyle='-')
 		plt.ylabel('Frobenius norm of Horizontal Weights')
-		plt.xlabel('Epoch #')
-		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"], loc='best')
+		plt.xlabel('Epochs')
+		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate"], loc='best')
 		plt.grid('on')
 		if save_now:
 			plt.savefig(model_path + "_horzWeights_norm" + fig_ext)
@@ -544,8 +545,8 @@ class MusicModelGRU(object):
 		vert_reset_plt, = plt.plot(epochs, self.vert_reset_norm, color=palette[1], linestyle='-')
 		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_norm, color=palette[2], linestyle='-')
 		plt.ylabel('Frobenius norm of Vertical Weights')
-		plt.xlabel('Epoch #')
-		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"], loc='best')
+		plt.xlabel('Epochs')
+		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate"], loc='best')
 		plt.grid('on')
 		if save_now:
 			plt.savefig(model_path + "_vertWeights_norm" + fig_ext)
@@ -560,8 +561,8 @@ class MusicModelGRU(object):
 		horz_reset_plt, = plt.plot(epochs, self.horz_reset_pos, color=palette[1], linestyle='-')
 		horz_hidden_plt, = plt.plot(epochs, self.horz_hidden_pos, color=palette[2], linestyle='-')
 		plt.ylabel('Fraction of Positive values in Horizontal Weights')
-		plt.xlabel('Epoch #')
-		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"], loc='best')
+		plt.xlabel('Epochs')
+		plt.legend([horz_update_plt, horz_reset_plt, horz_hidden_plt], ["Update Gate", "Reset Gate", "Candidate"], loc='best')
 		plt.grid('on')
 		if save_now:
 			plt.savefig(model_path + "_horzWeights_pos" + fig_ext)
@@ -575,8 +576,8 @@ class MusicModelGRU(object):
 		vert_reset_plt, = plt.plot(epochs, self.vert_reset_pos, color=palette[1], linestyle='-')
 		vert_hidden_plt, = plt.plot(epochs, self.vert_hidden_pos, color=palette[2], linestyle='-')
 		plt.ylabel('Fraction of Positive values in Vertical Weights')
-		plt.xlabel('Epoch #')
-		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate Gate"], loc='best')
+		plt.xlabel('Epochs')
+		plt.legend([vert_update_plt, vert_reset_plt, vert_hidden_plt], ["Update Gate", "Reset Gate", "Candidate"], loc='best')
 		plt.grid('on')
 		if save_now:
 			plt.savefig(model_path + "_vertWeights_pos" + fig_ext)

@@ -15,7 +15,7 @@ In the following, these models, the networks they use, and their cost function a
 
 \subsection{Conditional Distribution} % (fold)
 \label{sub:conditional_distribution}
-	The pitch $\vec{x}\order{t}\idx{p}$ and duration classes $\vec{x}\order{t}\idx{d}$ at step $t$ in a melody sequence, can be denoted by the combined feature vectore $\vec{x}\order{t}=\set{\vec{x}\order{t}\idx{p},\vec{x}\order{t}\idx{d}}$.	
+	The pitch $\vec{x}\order{t}\idx{p}$ and duration classes $\vec{x}\order{t}\idx{d}$ at step $t$ in a melody sequence, can be denoted by the combined feature vector $\vec{x}\order{t}=\set{\vec{x}\order{t}\idx{p},\vec{x}\order{t}\idx{d}}$.	
 	The archictecture of the full network model is based on the assumption of each note in the melody conditioning on all previous, so the next-step prediction of the network can be written as a two conditional distribution:
 	\begin{gather}
 		\begin{split}
@@ -29,12 +29,12 @@ In the following, these models, the networks they use, and their cost function a
 
 \subsection{Input network} % (fold)
 \label{sub:input_network}
-The input network merges the two class feature vectors, $\vec{x}\order{t}\idx{p}$ and $\vec{x}\order{t}\idx{p}$ into a two-hot-encoded vector, $\vec{x}\order{t}$, so the predictions of the output network can condition on both. The input network also provides the binary mask for each melody for the GRU-layer, so exceptions can be made when reaching the end of each melody.
+The input network merges the two one-hot-encoded class vectors into the two-hot-encoded vector, $\vec{x}\order{t}$. The input network also provides the binary mask for each melody for the GRU-layer, so empty predictions are made when reaching the end of each melody, when the values in the mask becomes zero.
 % subsection input_network (end)
 
 \subsection{Recurrent neural network} % (fold)
 \label{sub:recurrent_neural_network}
-	The main part of the models investigated is the recurrent neural network in the center transferring temporal information from the input network to the output network.
+	The main part of the models is the recurrent neural network in the center transferring temporal information from the input network to the output network.
 	To enhance the long term memory, gated recurrent units (GRU) are used. These are receiving $\vec{x}\order{t}$ for each step, $t$, in the melody. Each GRU run through the melody step by step, calculating the hidden activations recursively by the activation functions:
 	\begin{alignat}{2}
 	 	& \text{Reset:} \; & \vec{r}\order{t} &= \sigma_r\left(\vec{x}\order{t} \mat{W}_{xr} + \vec{h}\order{t-1} \mat{W}_{hr} + \vec{b}_r\right) \label{gru:reset} \\
@@ -42,21 +42,23 @@ The input network merges the two class feature vectors, $\vec{x}\order{t}\idx{p}
         & \text{Candidate:} \; & \vec{c}\order{t} &= \sigma_c\left(\vec{x}\order{t} \mat{W}_{xc} + \vec{r}\order{t} \odot \left(\vec{h}\order{t-1} \mat{W}_{hc}\right) + \vec{b}_c\right) \label{gru:candidate} \\
         & \text{Activation:} \; & \vec{h}\order{t} &= \left(1 - \vec{u}\order{t}\right) \odot \vec{h}\order{t-1} + \vec{u}\order{t} \odot \vec{c}\order{t} \label{gru:activation}
 	\end{alignat}
-	where $\mat{W}_x$ are the vertical weights transforming the current input $\vec{x}\order{t}$ linearly and the $\mat{W}_h$ are the horizontal weights transforming the previous activation linearly, so information about previous states can propagate horizontally through each step. The non-linear sigmoid functions are the logistic function ($\sigma(\vec{x})=(1+\eup^{-\vec{x}})^{-1}$) for the reset gate in equation~\eqref{gru:reset} and update gate in equation~\eqref{gru:update} and the hyperbolic tangent function for the candidate activation in equation~\eqref{gru:candidate}. The reset gate controls how much of the signal from the previous activation, $\vec{h}\order{t-1}$, will be a part of the current candidate activation, $\vec{c}\order{t}$, in equation~\eqref{gru:candidate} and the update gate then controls the proportional mixing of $\vec{h}\order{t-1}$ and $\vec{c}\order{t}$ in the new activation, $\vec{h}\order{t}$, in equation~\eqref{gru:activation}. This means that $(\vec{r}\order{t}, \vec{u}\order{t}) = (0,1)$ will cut off the signal from the previous states and $(\vec{r}\order{t}, \vec{u}\order{t}) = (1,0)$ will copy the previous activation entirely. This makes it possible for the model to condition the next prediction over long terms, like the overall tonality and common motifs, and short terms, like previous pitch interval jumps and current harmony (chords). The models ability to perform this temporal conditioning in a musical manner is what will be investigated later on. 
+	where $\mat{W}_x$ are the vertical weights transforming the current input $\vec{x}\order{t}$ linearly and the $\mat{W}_h$ are the horizontal weights transforming the previous activation linearly, so information about previous states can propagate horizontally through each step. The non-linear sigmoid functions are the logistic function ($\sigma(\vec{x})=(1+\eup^{-\vec{x}})^{-1}$) for the reset gate in equation~\eqref{gru:reset} and update gate in equation~\eqref{gru:update} and the hyperbolic tangent function for the candidate activation in equation~\eqref{gru:candidate}. The reset gate controls how much of the signal from the previous activation, $\vec{h}\order{t-1}$, will be a part of the current candidate activation, $\vec{c}\order{t}$, in equation~\eqref{gru:candidate} and the update gate then controls the proportional mixing of $\vec{h}\order{t-1}$ and $\vec{c}\order{t}$ in the new activation, $\vec{h}\order{t}$, in equation~\eqref{gru:activation}. This means that $(\vec{r}\order{t}, \vec{u}\order{t}) = (0,1)$ will cut off the signal from the previous states and $(\vec{r}\order{t}, \vec{u}\order{t}) = (1,0)$ will copy the previous activation entirely. This makes it possible for the model to condition the next prediction over long terms, like the overall tonality and common motifs, and short terms, like previous pitch interval jumps and current harmony (chords). The models ability to perform this temporal conditioning in a musical manner is what will be investigated in the experiment section. 
 
 	When running the backprogation algorithm for adjusting the model parameters in recurrent neural networks, vanishing gradients can be a huge problem leading to premature convergence (stopped learning). This is due to neurones in the network being saturated, when the gradient of the activation function is close to zero near convergence along the tails. The gradients will therefore vanish after multiple multiplication in the backpropagation, where each gradient depends on the previous. 
 
-	Exploding gradients can also occur when training recurrent neural networks, so a gradient clipping of 3 is performed.  
+	Exploding gradients can also occur when training recurrent neural networks, so a gradient clipping of 3 is used for all gradients.  
 % subsection recurrent_neural_network (end)
 
 \subsection{Output network} % (fold)
 \label{sub:output_network}
 	The output network consists of two standard feedforward neural networks with softmax activation functions for class probabilities. A neurones response to the hidden GRU states at time $t$ represents the probability of the next note at time $t+1$ belonging to a specific pitch class for the pitch network and duration class for the duration network.
-	The output function for class $k$ at time $t+1$ is:
+	The conditional probability for pitch class $p$ at time $t+1$ is then given by the output network as:
 	\begin{equation}
-		f(\vec{x}\order{t})\order{t+1}_k = s\left(\mat{W}_k \vec{h}\order{t} + \vec{b}\right)%\frac{\eup^{\vec{h}\order{t}}}{\sum^K_{k=1}}
+		p\left(\tilde{\vec{x}}\order{t+1}\idx{p}|\vec{x}\order{t'\le t}\right) = s\left(\mat{W}\idx{p} \vec{h}\order{t} + \vec{b}\right)%\frac{\eup^{\vec{h}\order{t}}}{\sum^K_{k=1}}
 	\end{equation}
-	where $s(\vec{x})$ is the softmax activation function, $\vec{h}\order{t}$ are the hidden GRU activations at time step $t$. As $\vec{h}\order{t}$ is a non-linear function of all previous notes $\vec{x}\order{t'<t}$ indirectly through the previous activation $\vec{h}\order{t-1}$ and of the current note $\vec{x}\order{t}$ directly through the input network.   
+	where $s(\vec{x})$ is the softmax activation function and the same holds for duration classes. 
+
+	% As $\vec{h}\order{t}$ is a non-linear function of all previous notes $\vec{x}\order{t'<t}$ indirectly through the previous activation $\vec{h}\order{t-1}$ and of the current note $\vec{x}\order{t}$ directly through the input network.   
 	
 	\subsection{Extended model} % (fold)
 	\label{sub:extended_model}
@@ -68,9 +70,9 @@ The input network merges the two class feature vectors, $\vec{x}\order{t}\idx{p}
 	The categorical cross entropy cost function for example $n$ is:
 	\begin{equation}
 		%L(\vec{x}\order{t}; \vec{f}) = \frac{1}{T}\sum^{T-1}_{t} \sum^{M}_{m} \left(\vec{x}_{m}\order{t+1} \log f(\vec{x}\order{t}) + \log(1-f(\vec{x}\order{t})  \right)
-		L_n(\vec{p}, \vec{q}) = -\sum^{M}_{m} p_{n,m} \log (q_{n,m})
+		L_n(\vec{p}, \vec{q}) = -\sum^{P}_{p} \vec{x}\order{t+1}\idx{p} \log p\left(\tilde{\vec{x}}\order{t+1}\idx{p}|\vec{x}\order{t'\le t}\right)
 	\end{equation}
-	summed over all $M$ classes, where $\vec{p}$ is the one-hot-encoded targets $\vec{x}\order{t+1}$ at timesteps $t\in\{1, T\}$. $\vec{q}=f(\vec{x}_n)$ is the softmax output from the network taking input $\vec{x}\order{t+1}$ at timesteps $t\in\{0, T-1\}$. All timesteps are treated as seperate datapoints, so the targets and outputs are unrolled to a 2D $([N \times [T-1] \text{ by } M)$-array and the loss for each are averaged over, $n$, the first dimension, after masking out the steps outside the melodies.
+	summed over all $P$ classes, where $\vec{p}$ is the one-hot-encoded targets $\vec{x}\order{t+1}$ at timesteps $t\in\{1, T\}$. $\vec{q}=f(\vec{x}_n)$ is the softmax output from the network taking input $\vec{x}\order{t+1}$ at timesteps $t\in\{0, T-1\}$. All timesteps are treated as seperate datapoints, so the targets and outputs are unrolled to a 2D $([N \times [T-1] \text{ by } M)$-array and the loss for each are averaged over, $n$, the first dimension, after masking out the steps outside the melodies.
 
 % subsection output_network (end)
 

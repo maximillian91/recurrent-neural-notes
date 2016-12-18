@@ -5,8 +5,8 @@ import re
 import matplotlib.pyplot as plt
 import seaborn
 std_palette = seaborn.color_palette('Set2', 8)
-seaborn.set(style='ticks', palette=std_palette)
-seaborn.set_context("paper")
+seaborn.set_context("talk")
+seaborn.set(style='ticks', palette='Set2')
 
 def load_train_save_model(model_name, max_seq_len, num_features_pitch, num_features_duration, NUM_GRU_LAYER_UNITS, USE_DETERMINISTIC_PREVIUOS_OUTPUT, set_x_input_to_zero, BATCH_SIZE, NUM_EPOCHS, train_data, valid_data, test_data=None, song_data=None, data_pitch_map=None, data_duration_map=None, write2midi=False, plotLearningCurves=False, plotActivationSeq=False, in_dropout_p=0.2, out_dropout_p=0.5, use_l2_penalty=False):
 
@@ -75,7 +75,7 @@ def main():
 
 	print(song_data["mask"])
 
-	write2midi = False
+	write2midi = True
 	plotLearningCurves = True
 	plotActivationSeq = False
 
@@ -94,6 +94,8 @@ def main():
  	pitch_palette = seaborn.husl_palette(n_colors=4, l=0.75)
  	duration_palette = seaborn.husl_palette(n_colors=4, l=0.55)
 
+ 	seaborn.set_context("paper")
+	seaborn.set(style='ticks', palette='Set2')
 	# TODO: DATA STATS - WORK IN PROGRESS - PERCENTAGES
 	rects_duration = dataStatsBarPlot(data_duration, data_mask, data_duration_map, palette, is_pitch=False, ax=ax_duration, bar_labels=True)
 	fig_duration.canvas.draw()
@@ -101,9 +103,9 @@ def main():
 	fig_pitch.canvas.draw()
 
 	# Plot the entire histogram
-	legend_names = tuple(['Original data'])
-	bars_pitch = tuple([rect[0] for rect in rects_pitch])
-	bars_duration = tuple([rect[0] for rect in rects_duration])
+	legend_names = ['Original data']
+	bars_pitch = [rect[0] for rect in rects_pitch]
+	bars_duration = [rect[0] for rect in rects_duration]
 
 	ax_pitch.legend(bars_pitch, legend_names)
 	ax_duration.legend(bars_duration, legend_names)
@@ -132,7 +134,7 @@ def main():
 	# model_specs.append({'name': 'model_2_with_20p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
 	model_specs.append({'name': 'model_2_with_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotActivationSeq': False, 'plotLearningCurves': False})
 	model_specs.append({'name': 'model_2_with_l2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
-	model_specs.append({'name': 'model_2_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': False, 'plotLearningCurves': True, 'write2midi': False})
+	model_specs.append({'name': 'model_2_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': False, 'plotLearningCurves': True, 'write2midi': True})
 	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
 	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output_with_l2', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
 
@@ -146,6 +148,8 @@ def main():
 	curve_handle = []
 	curve_handles = []
 	curve_names = []
+	seaborn.set_context("talk")
+	seaborn.set(style='ticks', palette='Set2')
 	fig_curves, ax_curves = plt.subplots(figsize=(9,6))
 
 	# Setup and train 
@@ -189,6 +193,8 @@ def main():
 
 		if plotLearningCurves and not NO_PLOTTING:
 			print "plotting learning curves of ", prettyString(model_spec['name']), "\n"
+			seaborn.set_context("talk")
+			seaborn.set(style='ticks', palette='Set2')
 			if PLOT_ALL_LEARNING_CURVES:
 				fig_list = model.plotLearningCurves(std_palette, fig_list=None, save_now=True, model_num=plot_count+1, fig_ext='.pdf')
 			plt.figure(fig_curves.number)
@@ -206,6 +212,7 @@ def main():
 			fig_duration.canvas.draw()
 			rects_pitch = dataStatsBarPlot(output_pitch, data_mask_y, data_pitch_map, palette, is_pitch=True, ax=ax_pitch, rects_list=rects_pitch)
 			fig_pitch.canvas.draw()
+			legend_names += [prettyString(model_spec['name']) + ' (#GRU=' + str(model_spec['num_gru'])]
 
 		# Evaluate on test set
 		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(test_data, None, None, False, data_pitch_map, data_duration_map, False, False)
@@ -223,9 +230,10 @@ def main():
 
 
 	# Plot the entire histogram
-	legend_names = tuple(['Original data'] + [prettyString(mod['name']) + ' (#GRU=' + str(mod['num_gru'])+')' for mod in model_specs])
-	bars_pitch = tuple([rect[0] for rect in rects_pitch])
-	bars_duration = tuple([rect[0] for rect in rects_duration])
+	seaborn.set_context("paper")
+	seaborn.set(style='ticks', palette='Set2')
+	bars_pitch = [rect[0] for rect in rects_pitch]
+	bars_duration = [rect[0] for rect in rects_duration]
 
 	ax_pitch.legend(bars_pitch, legend_names)
 	ax_duration.legend(bars_duration, legend_names)
@@ -235,6 +243,8 @@ def main():
 	plt.figure(fig_duration.number)
 	plt.savefig("../data/models/" + "models_duration_freq_barplot.pdf")
 
+	seaborn.set_context("talk")
+	seaborn.set(style='ticks', palette='Set2')
 	plt.figure(fig_curves.number)
 	plt.ylabel('Accuracies')
 	plt.xlabel('Epochs')

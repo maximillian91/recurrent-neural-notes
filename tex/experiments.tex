@@ -44,10 +44,10 @@ To investigate the distribution of the pitch and duration classes, the frequenci
 
 All reconstructions can be translated back to the \texttt{music21} format, written to a midi file, played, written as a musical score and compared against the original melody.
 
-\begin{table*}
+\begin{table}
     \centering
     \caption{
-        The test evaluation measures.
+        The test evaluation accuracies.
     }
     \label{tab:test_eval}
     % \setlength{\tabcolsep}{1em}
@@ -68,15 +68,15 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
         & {Model} 
         & {$p\idx{dropout}$}
         & {$\alpha_2$}
-        & {$L\idx{pitch}$}
-        & {$L\idx{duration}$}
+        % & {$L\idx{pitch}$}
+        % & {$L\idx{duration}$}
         & {$A\idx{pitch}$(\%)}
         & {$A\idx{duration}$(\%)} \\
         \midrule
         \input{../data/eval_table}
         \bottomrule
     \end{tabular}
-\end{table*}
+\end{table}
 
 \begin{figure*}
     \centering
@@ -94,7 +94,7 @@ All reconstructions can be translated back to the \texttt{music21} format, writt
 
 \begin{figure*}
     \centering
-    \includegraphics[width=.8\textwidth]{Reconstructions_cut}
+    \includegraphics[width=.6\textwidth]{Reconstructions_cut}
     \caption{First 4 bars of notes in the melody, Fiddle Hill Jig, for original data and reconstructions produced by model 1 with dropout of 50\% and by model 2 with dropout of 50\% and $L_2$-regularization.}
     \label{fig:reconstructions}
 \end{figure*}
