@@ -25,13 +25,13 @@ An $L_2$-regularization term is also added to the total cost during training for
 
 \subsection{Evaluation}
 
-The prediction accuracy and categorical cross entropy for both classes are recorded for each epoch and seen in the learning curves in Figure \ref{fig:learning_curves} and \ref{fig:learning_curves_regularized}.
+The prediction accuracy and categorical cross entropy for both classes are recorded for each epoch and seen in the learning curves in Figure \ref{fig:learning_curves}.
 
 To investigate the connections in the GRU layer, the mean, Frobenius norm and positive value fractions of horizontal and vertical weights, where the trend in the overall magnitude and sign of the weights are expected to be seen. \\ \\
 
 The two models with and without dropout and/or regularization are tested for 10, 25, 50, 75, and 100 gated recurrent units, so scaling of performance can be investigated and the effect of the regularization methods compared. The scaling of performance with the number of GRU are clearly seen, but not shown here, so 100 GRU are used as a standard and for these regularization methods and model architectures can be compared in Table \ref{tab:test_eval}.
 
-All models are trained for 200 epochs, as a clear convergence in the learning curves in Figure \ref{fig:learning_curves} and \ref{fig:learning_curves_regularized} were seen after 150 epochs of training. \\ \\
+All models were trained for 200 epochs, as they reaches convergence after 150 epochs in the learning curves seen in Figure \ref{fig:learning_curves}\\ \\
 
 \subsection{Reconstructions}
 

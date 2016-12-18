@@ -1,6 +1,7 @@
 import numpy as np 
 import models
 from data import load_data, dataStatsBarPlot, write2table
+import re
 import matplotlib.pyplot as plt
 import seaborn
 std_palette = seaborn.color_palette('Set2', 8)
@@ -55,7 +56,7 @@ def main():
 	valid_idx = data["valid_idx"]
 	test_idx = data["test_idx"]
 
-	song_number = [202, 450]#test_idx[2]
+	song_number = [202] #, 450]#test_idx[2]
 	for i, idx in enumerate([train_idx, valid_idx, test_idx]):
 		if song_number in idx:
 			print(i)
@@ -87,10 +88,11 @@ def main():
 	fig_pitch, ax_pitch = plt.subplots(figsize=(9,6))
 	fig_duration, ax_duration = plt.subplots(figsize=(6,6))
 
+	# Define palettes for plotting
 	n_colors = 10
  	palette = seaborn.color_palette(palette='muted', n_colors=n_colors, desat=None)
- 	pitch_palette = seaborn.color_palette(palette='husl', n_colors=4, desat=None) 
- 	duration_palette = seaborn.color_palette(palette='husl', n_colors=4, desat=0.5)
+ 	pitch_palette = seaborn.husl_palette(n_colors=4, l=0.75)
+ 	duration_palette = seaborn.husl_palette(n_colors=4, l=0.55)
 
 	# TODO: DATA STATS - WORK IN PROGRESS - PERCENTAGES
 	rects_duration = dataStatsBarPlot(data_duration, data_mask, data_duration_map, palette, is_pitch=False, ax=ax_duration, bar_labels=True)
@@ -122,7 +124,7 @@ def main():
 	model_specs.append({'name': 'model_1', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
 	# # model_specs.append({'name': 'model_1_1_with_20p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 50, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
 	# model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
-	model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
+	model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True, 'plotActivationSeq': True, 'write2midi': True})
 	model_specs.append({'name': 'model_1_with_l2', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
 	model_specs.append({'name': 'model_1_with_l2_and_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
 
@@ -130,7 +132,7 @@ def main():
 	# model_specs.append({'name': 'model_2_with_20p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
 	model_specs.append({'name': 'model_2_with_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotActivationSeq': False, 'plotLearningCurves': False})
 	model_specs.append({'name': 'model_2_with_l2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})	
-	model_specs.append({'name': 'model_2_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': False, 'plotLearningCurves': True})
+	model_specs.append({'name': 'model_2_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': False, 'plotLearningCurves': True, 'write2midi': True})
 	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
 	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output_with_l2', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
 
@@ -141,6 +143,7 @@ def main():
 	# model_names.append({'name': 'GRU_using_nondeterministic_previous_output_with_20p_dropout', 'use_deterministic_output': False, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 200, 'num_gru': 100})
 
 	plot_count = 0 
+	curve_handle = []
 	curve_handles = []
 	curve_names = []
 	fig_curves, ax_curves = plt.subplots(figsize=(9,6))
@@ -185,28 +188,28 @@ def main():
 		model = load_train_save_model(model_spec['name'], max_seq_len, num_features_pitch, num_features_duration, model_spec['num_gru'], model_spec['use_deterministic_output'], model_spec['zero_input'], BATCH_SIZE, num_epochs, train_data, valid_data, test_data, song_data, data_pitch_map, data_duration_map, write2midi, plotLearningCurves, plotActivationSeq, model_spec['in_dropout_p'], model_spec['out_dropout_p'], use_l2_penalty)
 
 		if plotLearningCurves and not NO_PLOTTING:
-			print "plotting learning curves of ", model_spec['name'], "\n"
+			print "plotting learning curves of ", prettyString(model_spec['name']), "\n"
 			if PLOT_ALL_LEARNING_CURVES:
 				fig_list = model.plotLearningCurves(std_palette, fig_list=None, save_now=True, model_num=plot_count+1, fig_ext='.pdf')
 			else:
 				plt.figure(fig_curves.number)
-				curve_handle = learningCurvesPlotter(model, pitch_palette[plot_count], duration_palette[plot_count])
-				curve_handles += [curve_handle[0]]
-				curve_names += [model_spec['name'].replace('_',' ').capitalize()]
+				curve_handle += learningCurvesPlotter(model, pitch_palette[plot_count], duration_palette[plot_count])
+				curve_handles += [curve_handle[4*plot_count]]
+				curve_names += [prettyString(model_spec['name'])]
 			plot_count += 1
 
 
 		# Plot the histogram over model reconstructions for total data set.
 		if plotDataStats and not NO_PLOTTING:
 			print "plotting data stats of ", model_spec['name'], "\n"
-			cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(all_data, None, None, write2midi, data_pitch_map, data_duration_map, False, False)
+			cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(all_data, None, None, False, data_pitch_map, data_duration_map, False, False)
 			rects_duration = dataStatsBarPlot(output_duration, data_mask_y, data_duration_map, palette, is_pitch=False, ax=ax_duration, rects_list=rects_duration)
 			fig_duration.canvas.draw()
 			rects_pitch = dataStatsBarPlot(output_pitch, data_mask_y, data_pitch_map, palette, is_pitch=True, ax=ax_pitch, rects_list=rects_pitch)
 			fig_pitch.canvas.draw()
 
 		# Evaluate on test set
-		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(test_data, None, None, write2midi, data_pitch_map, data_duration_map, False, False)
+		cost_pitch, acc_pitch, output_pitch, cost_duration, acc_duration, output_duration = model.evaluate(test_data, None, None, False, data_pitch_map, data_duration_map, False, False)
 
 		# Write evaluation measures to a LaTex table.
 		if testEvaluation: 
@@ -221,7 +224,7 @@ def main():
 
 
 	# Plot the entire histogram
-	legend_names = tuple(['Original data'] + [mod['name'].replace('_',' ').capitalize() + ' (#gru=' + str(mod['num_gru'])+')' for mod in model_specs])
+	legend_names = tuple(['Original data'] + [prettyString(mod['name']) + ' (#GRU=' + str(mod['num_gru'])+')' for mod in model_specs])
 	bars_pitch = tuple([rect[0] for rect in rects_pitch])
 	bars_duration = tuple([rect[0] for rect in rects_duration])
 
@@ -236,7 +239,7 @@ def main():
 	plt.figure(fig_curves.number)
 	plt.ylabel('Accuracies')
 	plt.xlabel('Epoch #')
-	plt.legend(curve_handles + curve_handle, curve_names + ["Training pitch", "Validation pitch", "Training duration", "Validation duration"], loc="best", ncol=2)
+	plt.legend(curve_handles + curve_handle[:4], curve_names + ["Training pitch", "Validation pitch", "Training duration", "Validation duration"], loc="best", ncol=2)
 	plt.grid('on')	
 	plt.savefig("../data/models/" + "acc_learning_curves.pdf")
 
@@ -251,6 +254,10 @@ def learningCurvesPlotter(model, pitch_color, duration_color):
 	acc_valid_duration_plt, = plt.plot(epochs, model.acc_valid_duration, color=duration_color, linestyle='--')
 
 	return [acc_train_pitch_plt, acc_valid_pitch_plt, acc_train_duration_plt, acc_valid_duration_plt]
+
+def prettyString(old_string):
+	new_string = re.sub(r"(\d+)p", r"\1%", old_string.capitalize().replace('_',' ').replace('l2','$L_2$'))
+	return new_string
 
 
 if __name__ == '__main__':

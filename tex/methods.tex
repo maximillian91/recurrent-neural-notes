@@ -15,7 +15,8 @@ In the following, these models, the networks they use, and their cost function a
 
 \subsection{Conditional Distribution} % (fold)
 \label{sub:conditional_distribution}
-The next-step prediction of the output network will be based on the conditional distribution:
+	The pitch $\vec{x}\order{t}\idx{p}$ and duration classes $\vec{x}\order{t}\idx{d}$ at step $t$ in a melody sequence, can be denoted by the combined feature vectore $\vec{x}\order{t}=\set{\vec{x}\order{t}\idx{p},\vec{x}\order{t}\idx{d}}$.	
+	The archictecture of the full network model is based on the assumption of each note in the melody conditioning on all previous, so the next-step prediction of the network can be written as a two conditional distribution:
 	\begin{gather}
 		\begin{split}
 		\MoveEqLeft[3]
@@ -23,9 +24,7 @@ The next-step prediction of the output network will be based on the conditional 
 				& = p\left(\vec{x}\order{0}\idx{p}\right) \prod^{t+1}_{t'=1} p\left(\vec{x}\order{t'}\idx{p}|\vec{x}\order{t'-1}\right) \label{}
 		\end{split} 	
 	\end{gather}
-	where $\vec{x}\order{t}=\{\vec{x}\order{t}\idx{p}, \vec{x}\order{t}\idx{d}\}$ is the combined class feature vector of the pitch class vector $\vec{x}\order{t}\idx{p}$ and duration class vector $\vec{x}\order{t}\idx{d}$ at step $t$. The conditional distribution is similar for the duration classes, so the duration condition on both the previous pitches and durations encountered and likewise for the pitch. 
-
-	The archictecture of the full network model is based on the assumption of these two conditional distributions.
+	where the conditional distribution is similar for the duration classes.
 % subsection conditional_distribution (end)
 
 \subsection{Input network} % (fold)

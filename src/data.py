@@ -498,6 +498,8 @@ def write2table(table_file, model_num, dropout_p, use_l2_penalty, pitch_cost, du
 
 # 	feat_count = np.dot(flat_mask, flat_data)	
 
+print
+
 def main():
 	# path for pickled data files:
 	# pkl_path = "../data/pkl/"
