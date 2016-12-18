@@ -6,19 +6,19 @@ To create music, rules have been set up for what sounds or \emph{tones} go great
 Music is normally experienced as raw audio, but is simpler to represent using musical notation.
 This is analogous to the relationship between speech and text.
 In musical notation, a tone is represented by a note which has a frequency called a \emph{pitch} as well as a \emph{duration}.
-The absence of tones is also important and is called a rest.
-Putting several notes and rests into a sequence makes a melody, and it helps using musical theory to do this.
+The absence of tones is also important and is called a \emph{rest}.
+Putting several notes and rests into a sequence makes a \emph{melody}, and it helps using musical theory to do this.
 
 We have examined whether a recurrent neural network (RNN) can learn musical theory from several collections of folk music and recreate complete melodies and create new ones.
 To represent the melodies in the network, we were inspired by an article by Choi et al.\ on electronic health records \cite{Choi2015}. Herein, a patient's hospitalisation history is represented by a sequence of hospitalisations with a multi-hot encoding of diagnosis codes and medication codes for each hospitalisation as well as a sequence of durations for time between hospitalisations.
 In an RNN, the predicted hospitalisation codes and durations are then conditioned separately on both the earlier hospitalisation codes and the earlier durations.
-Based on this idea, the notes and rests could be represented as a sequence of one-hot encoded pitches (including no pitch for rests) as well as a sequence of durations of the notes and rests.
+Based on this idea, notes and rests could be represented as a sequence of one-hot encoded pitches (including no pitch for rests) as well as a sequence of durations of the notes and rests.
 
 Another approach has been done by Zimmerman \cite{Zimmerman2016} by predicting pitch and possibly a chord every $n$th part of a beat using an RNN.
 Using the Nottingham Music Database \cite{NMD}, accuracies of about $\SI{77}{\%}$ are achieved.
 Chung et al.\ have also used the same data set in comparing RNNs with long short-term memory (LSTM) and gated recurrent units (GRU) as well as to a simple RNN using a $\tanh$ activation function \cite{Chung2014}, but only using the pitch values.
 They find that the simple RNN performs the best.
 
-In this report, we present two models using RNN: one similar to the one used by Choi et al. \cite{Choi2015} and one using the previous output.
-We use these models on the Nottingham Music Database to reconstruct the melodies therein as well as sampling from them.
+In this report, we present three models using RNN: one similar to the one used by Choi et al. \cite{Choi2015}, one also using the previous output, and one only using the previous output.
+We use these models on the Nottingham Music Database to reconstruct the melodies therein.
 We also examine using different kinds of regularisation on the models.

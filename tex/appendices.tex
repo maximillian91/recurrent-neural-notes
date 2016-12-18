@@ -1,132 +1,119 @@
 \section{GRU Activations} % (fold)
 \label{sec:gru_activations}
-\begin{figure*}[h!]
+\begin{figure}[h!]
     \centering
-    \setkeys{Gin}{height=.28\textheight}
-	\hspace*{\fill}
+    \setkeys{Gin}{width = \linewidth, trim = {0 8cm 0 0}, clip = true}
     \subbottom[\label{fig:activations:26}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_Fiddle Hill Jig_gruActivations_gru26}
     }
-    \hfill
+    \\
     \subbottom[\label{fig:activations:50}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_Fiddle Hill Jig_gruActivations_gru50}
     }
-	\hspace*{\fill}
     \caption{GRU Activations, $h\idx{k}\order{t}$, for \subcaptionref{fig:activations:26} unit $k=26$, which shows a higher response to the combination of the pitch G and F\#, and \subcaptionref{fig:activations:50} unit $k=50$, which shows a higher response in the beginning and end of the melody.)
     }
     \label{fig:activations}
-\end{figure*}
+\end{figure}
 
 % section gru_activations (end)
 
 \section{GRU Weights} % (fold)
 \label{sec:gru_weights}
-\begin{figure*}[h!]
+\begin{figure}[h!]
     \centering
-    \setkeys{Gin}{height=.23\textheight}
-	\hspace*{\fill}
+    \setkeys{Gin}{width = \linewidth}
     \subbottom[\label{fig:model_1:weights_pos:horz}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_horzWeights_mean}
     }
-    \hfill
+    \\
     \subbottom[\label{fig:model_1:weights_pos:vert}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_vertWeights_mean}
     }
-	\hspace*{\fill}
     \caption{Mean over the three kinds of GRU weights (Update, Reset and Candidate), for \subcaptionref{fig:model_1:weights_pos:horz} horizontal weights $\mat{W}\idx{h}$ and \subcaptionref{fig:model_1:weights_pos:vert} vertical weights $\mat{W}\idx{x}$ recorded after each epoch.
  	}
     \label{fig:model_1:weights_pos}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}[h!]
+\begin{figure}[h!]
     \centering
-    \setkeys{Gin}{height=.23\textheight}
-	\hspace*{\fill}
+    \setkeys{Gin}{width = \linewidth}
     \subbottom[\label{fig:model_1:weights_pos:horz}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_horzWeights_norm}
     }
-    \hfill
+    \\
     \subbottom[\label{fig:model_1:weights_pos:vert}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_vertWeights_norm}
     }
-	\hspace*{\fill}
     \caption{Frobenius norm over the three kinds of GRU weights (Update, Reset and Candidate), for \subcaptionref{fig:model_1:weights_pos:horz} horizontal weights $\mat{W}\idx{h}$ and \subcaptionref{fig:model_1:weights_pos:vert} vertical weights $\mat{W}\idx{x}$ recorded after each epoch.
  	}
     \label{fig:model_1:weights_pos}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}[h!]
+\begin{figure}[h!]
     \centering
-    \setkeys{Gin}{height=.23\textheight}
-	\hspace*{\fill}
+    \setkeys{Gin}{width = \linewidth}
     \subbottom[\label{fig:model_1:weights_pos:horz}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_horzWeights_pos}
     }
-    \hfill
+    \\
     \subbottom[\label{fig:model_1:weights_pos:vert}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_vertWeights_pos}
     }
-	\hspace*{\fill}
     \caption{Fraction of positive values in three kinds of GRU weights (Update, Reset and Candidate), for \subcaptionref{fig:model_1:weights_pos:horz} horizontal weights $\mat{W}\idx{h}$ and \subcaptionref{fig:model_1:weights_pos:vert} vertical weights $\mat{W}\idx{x}$ recorded after each epoch.
  	}
     \label{fig:model_1:weights_pos}
-\end{figure*}
+\end{figure}
 
 
-\begin{figure*}[h!]
+\begin{figure}[h!]
     \centering
-    \setkeys{Gin}{height=.23\textheight}
-	\hspace*{\fill}
+    \setkeys{Gin}{width = \linewidth}
     \subbottom[\label{fig:model_1:weights_pos:horz}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_horzWeights_mean}
     }
-    \hfill
+    \\
     \subbottom[\label{fig:model_1:weights_pos:vert}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_vertWeights_mean}
     }
-	\hspace*{\fill}
     \caption{Mean over the three kinds of GRU weights (Update, Reset and Candidate), for \subcaptionref{fig:model_1:weights_pos:horz} horizontal weights $\mat{W}\idx{h}$ and \subcaptionref{fig:model_1:weights_pos:vert} vertical weights $\mat{W}\idx{x}$ recorded after each epoch.
  	}
     \label{fig:model_1:weights_pos}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}[h!]
+\begin{figure}[h!]
     \centering
-    \setkeys{Gin}{height=.23\textheight}
-	\hspace*{\fill}
+    \setkeys{Gin}{width = \linewidth}
     \subbottom[\label{fig:model_1:weights_pos:horz}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_horzWeights_norm}
     }
-    \hfill
+    \\
     \subbottom[\label{fig:model_1:weights_pos:vert}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_vertWeights_norm}
     }
-	\hspace*{\fill}
     \caption{Frobenius norm over the three kinds of GRU weights (Update, Reset and Candidate), for \subcaptionref{fig:model_1:weights_pos:horz} horizontal weights $\mat{W}\idx{h}$ and \subcaptionref{fig:model_1:weights_pos:vert} vertical weights $\mat{W}\idx{x}$ recorded after each epoch.
  	}
     \label{fig:model_1:weights_pos}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}[h!]
+\begin{figure}[h!]
     \centering
-    \setkeys{Gin}{height=.23\textheight}
-	\hspace*{\fill}
+    \setkeys{Gin}{width = \linewidth}
     \subbottom[\label{fig:model_1:weights_pos:horz}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_horzWeights_pos}
     }
-    \hfill
+    \\
     \subbottom[\label{fig:model_1:weights_pos:vert}]{
         \includegraphics{model_1_with_50p_dropout_gru_100_bs_10_e_200_vertWeights_pos}
     }
-	\hspace*{\fill}
     \caption{Fraction of positive values in three kinds of GRU weights (Update, Reset and Candidate), for \subcaptionref{fig:model_1:weights_pos:horz} horizontal weights $\mat{W}\idx{h}$ and \subcaptionref{fig:model_1:weights_pos:vert} vertical weights $\mat{W}\idx{x}$ recorded after each epoch.
  	}
     \label{fig:model_1:weights_pos}
-\end{figure*}
+\end{figure}
 
 
 % section gru_weights (end)
 
+\clearpage
 \section{Histogram over note durations} % (fold)
 \label{sec:histogram_over_note_durations}
 \begin{figure*}
