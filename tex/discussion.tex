@@ -6,7 +6,7 @@ As mentioned in the experimental setup, model 2 could be forced to not reducing 
 
 To validate whether gradients vanish through backpropagation, the weights are investigated in Appendix~\ref{sec:gru_weights}, where it is seen that the frobenius norm of the weight matrices keep on increasing and the mean varying gradually, so the weights are adjusted during training. 
 
-The model 1 and 2 reconstructions can be compared to the original example in Figure~\ref{fig:reconstructions}, where it is seen that the models can definitely catch the scale of the melody and mostly predict pitches belonging to that. Some jumps in pitch (intervals) are predicted correctly.
+The model 1 and 2 reconstructions can be compared to the original example in Figure~\ref{fig:reconstructions}, where it is seen that the models can definitely catch the scale of the melody and mostly predict pitches belonging to that. The third note, F, made by model 2 is unfortuneately outside the original melodies scale, D-major, where it should have been F\#. Most melodies are in the G-, D- or A-major scale, where a pitch like Bb and F rarely appears only around 600 times, so the data set is highly biased towards some notes and model would probably not be able to reconstruct melodies using scales outside the standard ones used in Irish folk music, like f.ex. Jazz standards.   
 
 Predicting durations should be much easier for the models and they seem to be produced with the same frequency as in the original melody, but mostly misplaced. This is a mere artifact of the feature formatting itself, as one wrong prediction of a duration will shift the whole melody and not align with the original melody. This could be solved by using continous relative positions instead of duration classes. 
 
