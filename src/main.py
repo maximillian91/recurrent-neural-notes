@@ -119,22 +119,22 @@ def main():
 	# Initialize model specs.
 	model_specs = []
 	# model_specs.append({'name': 'model_1', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
-	model_specs.append({'name': 'model_1', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': True})
+	model_specs.append({'name': 'model_1', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
 	# # model_specs.append({'name': 'model_1_1_with_20p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 50, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
 	# model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
-	model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': True})
-	model_specs.append({'name': 'model_1_with_l2', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
-	model_specs.append({'name': 'model_1_with_l2_and_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
+	model_specs.append({'name': 'model_1_with_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
+	model_specs.append({'name': 'model_1_with_l2', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
+	model_specs.append({'name': 'model_1_with_l2_and_50p_dropout', 'use_deterministic_output': None, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
 
-	model_specs.append({'name': 'model_2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': True})
+	model_specs.append({'name': 'model_2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': True})
 	# model_specs.append({'name': 'model_2_with_20p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.2, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
-	model_specs.append({'name': 'model_2_with_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotActivationSeq': False, 'plotLearningCurves': False})
-	model_specs.append({'name': 'model_2_with_l2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})	
-	model_specs.append({'name': 'model_2_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': True, 'plotLearningCurves': True})
-	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True, 'plotLearningCurves': False})
-	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output_with_l2', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': True})
+	model_specs.append({'name': 'model_2_with_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotActivationSeq': False, 'plotLearningCurves': False})
+	model_specs.append({'name': 'model_2_with_l2', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})	
+	model_specs.append({'name': 'model_2_with_l2_and_50p_dropout', 'use_deterministic_output': True, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': True, 'testEvaluation': False, 'plotLearningCurves': True})
+	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False, 'plotLearningCurves': False})
+	model_specs.append({'name': 'GRU_using_only_deterministic_previous_output_with_l2', 'use_deterministic_output': True, 'zero_input': True, 'in_dropout_p': 0, 'out_dropout_p': 0, 'use_l2_penalty': True, 'num_epochs': 0, 'num_gru': 100, 'plotDataStats': False, 'testEvaluation': False})
 
-	#model_specs = [model_specs[0], model_specs[1], model_specs[4], model_specs[6]] #, model_specs[-2]]
+	model_specs = [model_specs[0], model_specs[1], model_specs[4], model_specs[7]] #, model_specs[-2]]
 	# model_specs = [model_specs[-3]]
 
 	# model_names.append({'name': 'GRU_using_nondeterministic_previous_output_with_50p_dropout', 'use_deterministic_output': False, 'zero_input': False, 'in_dropout_p': 0.5, 'out_dropout_p': 0, 'num_epochs': 200, 'num_gru': 100})
@@ -192,7 +192,7 @@ def main():
 				plt.figure(fig_curves.number)
 				curve_handle = learningCurvesPlotter(model, pitch_palette[plot_count], duration_palette[plot_count])
 				curve_handles += [curve_handle[0]]
-				curve_names += [model_spec['name']]
+				curve_names += [model_spec['name'].replace('_',' ').capitalize()]
 			plot_count += 1
 
 
@@ -220,10 +220,8 @@ def main():
 			write2table('../data/eval_table', model_num, model_spec['in_dropout_p'], int(use_l2_penalty), cost_pitch, cost_duration, acc_pitch, acc_duration)
 
 
-
-
 	# Plot the entire histogram
-	legend_names = tuple(['original data'] + [mod['name'].replace('_',' ') + ' (#gru=' + str(mod['num_gru'])+')' for mod in model_specs])
+	legend_names = tuple(['Original data'] + [mod['name'].replace('_',' ').capitalize() + ' (#gru=' + str(mod['num_gru'])+')' for mod in model_specs])
 	bars_pitch = tuple([rect[0] for rect in rects_pitch])
 	bars_duration = tuple([rect[0] for rect in rects_duration])
 
@@ -238,7 +236,7 @@ def main():
 	plt.figure(fig_curves.number)
 	plt.ylabel('Accuracies')
 	plt.xlabel('Epoch #')
-	plt.legend(curve_handles + curve_handle, curve_names + ["Training Pitch", "Validation Pitch", "Training Duration", "Validation Duration"])
+	plt.legend(curve_handles + curve_handle, curve_names + ["Training pitch", "Validation pitch", "Training duration", "Validation duration"], loc="best", ncol=2)
 	plt.grid('on')	
 	plt.savefig("../data/models/" + "acc_learning_curves.pdf")
 
