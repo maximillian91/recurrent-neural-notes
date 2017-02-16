@@ -10,8 +10,9 @@ The model is also expanded to feeding the previous prediction from the output-ne
 
 The final documentation of the project and results can be found [here](https://www.dropbox.com/s/i4fs83z07st24p3/report.pdf?dl=0). 
 
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Features.png" width="48">
 
-![Feature processing](fig/Features.png?raw=true)
+![Feature processing](fig/Feature_process.png?raw=true =10x)
 
 ![Models graph](fig/Models.png?raw=true)
 
@@ -23,9 +24,8 @@ The final documentation of the project and results can be found [here](https://w
 
 ![Reconstructed melody](fig/Reconstructions_cut.png?raw=true)
 
-![Model 1 activations for unit 50](fig/model_1_with_50p_dropout_gru_100_bs_10_e_200_Fiddle Hill Jig_gruActivations_gru50.png?raw=true)
+![Model 1 activations for unit 26](fig/model_1_activations_gru_26.png?raw=true)
 
-![Model 1 activations for unit 26](fig/model_1_with_50p_dropout_gru_100_bs_10_e_200_Fiddle Hill Jig_gruActivations_gru26.png?raw=true)
-
+![Model 1 activations for unit 50](fig/model_1_activations_gru_50.png?raw=true)
 
 
