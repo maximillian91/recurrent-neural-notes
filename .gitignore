@@ -12,7 +12,7 @@ models
 *jpg
 *jpeg
 *.gif
-*.png
+#*.png
 *.mid
 
 # Python
@@ -105,7 +105,7 @@ target/
 # these rules might exclude image files for figures etc.
 *.ps
 *.eps
-*.pdf
+#*.pdf
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
