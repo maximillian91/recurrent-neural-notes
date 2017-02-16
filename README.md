@@ -10,7 +10,7 @@ The model is also expanded to feeding the previous prediction from the output-ne
 
 The final documentation of the project and results can be found [here](https://www.dropbox.com/s/i4fs83z07st24p3/report.pdf?dl=0). 
 
-<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Features.png" width="48">
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Features.png" width="250">
 
 ![Feature processing](fig/Feature_process.png?raw=true =10x)
 
