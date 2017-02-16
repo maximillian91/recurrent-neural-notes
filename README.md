@@ -11,5 +11,21 @@ The model is also expanded to feeding the previous prediction from the output-ne
 The final documentation of the project and results can be found [here](https://www.dropbox.com/s/i4fs83z07st24p3/report.pdf?dl=0). 
 
 
-![Feature processing](fig/Features.pdf?raw=true)
+![Feature processing](fig/Features.png?raw=true)
+
+![Models graph](fig/Models.png?raw=true)
+
+![Learning Curves](fig/acc_learning_curves.png?raw=true)
+
+![Barplot over pitches](fig/models_pitch_freq_barplot.png?raw=true)
+
+![Barplot over durations](fig/models_duration_freq_barplot.png?raw=true)
+
+![Reconstructed melody](fig/Reconstructions_cut.png?raw=true)
+
+![Model 1 activations for unit 50](fig/model_1_with_50p_dropout_gru_100_bs_10_e_200_Fiddle Hill Jig_gruActivations_gru50.png?raw=true)
+
+![Model 1 activations for unit 26](fig/model_1_with_50p_dropout_gru_100_bs_10_e_200_Fiddle Hill Jig_gruActivations_gru26.png?raw=true)
+
+
 
