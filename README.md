@@ -10,3 +10,6 @@ The model is also expanded to feeding the previous prediction from the output-ne
 
 The final documentation of the project and results can be found [here](https://www.dropbox.com/s/i4fs83z07st24p3/report.pdf?dl=0). 
 
+
+![Feature processing](fig/Features.pdf?raw=true)
+
