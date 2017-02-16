@@ -12,20 +12,18 @@ The final documentation of the project and results can be found [here](https://w
 
 <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Features.png" width="250">
 
-![Feature processing](fig/Feature_process.png?raw=true =10x)
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Models.png" width="250">
 
-![Models graph](fig/Models.png?raw=true)
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/acc_learning_curves.png" width="250">
 
-![Learning Curves](fig/acc_learning_curves.png?raw=true)
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/models_pitch_freq_barplot.png" width="250">
 
-![Barplot over pitches](fig/models_pitch_freq_barplot.png?raw=true)
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/models_duration_freq_barplot.png" width="250">
 
-![Barplot over durations](fig/models_duration_freq_barplot.png?raw=true)
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Reconstructions_cut.png" width="250">
 
-![Reconstructed melody](fig/Reconstructions_cut.png?raw=true)
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/model_1_activations_gru_26.png" width="250">
 
-![Model 1 activations for unit 26](fig/model_1_activations_gru_26.png?raw=true)
-
-![Model 1 activations for unit 50](fig/model_1_activations_gru_50.png?raw=true)
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/model_1_activations_gru_50.png" width="250">
 
 
