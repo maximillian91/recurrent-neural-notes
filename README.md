@@ -1,3 +1,7 @@
+<script type="text/javascript"
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
 # recurrent-neural-notes
 
 Exam project in the [Deep Learning course][deep-learning] at DTU.
@@ -10,23 +14,35 @@ The model is also expanded to feeding the previous prediction from the output-ne
 
 The final documentation of the project and results can be found [here](https://www.dropbox.com/s/i4fs83z07st24p3/report.pdf?dl=0). 
 
-## The next-step prediction models (with and without prediction input)
+### Data pre-processing 
 
-<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Features.png" height="250"> <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Models.png" height="250">
+From ABC-format to Music21 objects to zero-padded one-hot encoded vectors for each note (pitch and duration) in each melody (list of lists of vectors --> numpy array X=[M, N, F]=[Melodies, Notes, Features]). Here all notes in all melodies are represented by a duration tensor, \\(X_d\\), with 14 features and a pitch tensor, \\(X_p\\), with 35 features. 
 
-## The learning curves for the 2 models with and without dropout.
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Features.png" height="250">
+
+### The next-step prediction GRU network models (with and without [orange] prediction input)
+
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Models.png" height="250">
+
+### The learning curves for the 2 models with and without regularization.
+
+Regularizing the GRU networks reduce overfitting, as seen by less span between training and validation accuracy curves. 
 
 <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/acc_learning_curves.png" width="800">
 
-## Histogram over pitch (left) and duration (right) usage in all melodies. 
+**Dropout:** By leaving out notes along the melodies, a lossy noise and therefore a completion task is introduced to the models, so during training the next-step prediction will rely more on the previous GRU activations \\(h^{(t−1)}\\) and the horizontal connections will be enhanced to make up for the missing input.
 
-<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/models_pitch_freq_barplot.png" height="250"> <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/models_duration_freq_barplot.png" height="250">
+**Prediction input**: By feeding in the previous prediction, a stronger loss signal will traverse across the horizontal connections and vanishing gradients can be avoided.   
 
-## Reconstructions of "The Fiddle Hill Jig" by Model 1 and 2. 
+### Histogram over pitch (left) and duration (right) usage in all melodies. 
+
+<img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/models_pitch_freq_barplot.png" height="300"> <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/models_duration_freq_barplot.png" height="300">
+
+### Reconstructions of "The Fiddle Hill Jig" by Model 1 and 2. 
 
 <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Reconstructions_cut.png" width="600">
 
-## GRU activations for two units in model 1.
+### GRU activations for two units in model 1.
 
 <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/model_1_activations_gru_26.png" width="400"> <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/model_1_activations_gru_50.png" width="400">
 
