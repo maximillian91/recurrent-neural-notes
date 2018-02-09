@@ -12,7 +12,9 @@ The final documentation of the project and results can be found [here](https://w
 
 ### Data pre-processing 
 
-From ABC-format to Music21 objects to zero-padded one-hot encoded vectors for each note (pitch and duration) in each melody (list of lists of vectors --> numpy array X=[M, N, F]=[Melodies, Notes, Features]). Here all notes in all melodies are represented by a duration tensor, \\(X_d\\), with 14 features and a pitch tensor, \\(X_p\\), with 35 features. 
+h<sub>&theta;</sub>(x) = &theta;<sub>o</sub> x + &theta;<sub>1</sub>x
+
+From ABC-format to Music21 objects to zero-padded one-hot encoded vectors for each note (pitch and duration) in each melody (list of lists of vectors --> numpy array X=[M, N, F]=[Melodies, Notes, Features]). Here all notes in all melodies are represented by a duration tensor, X<sub>d</sub>, with 14 features and a pitch tensor, X<sub>d</sub>, with 35 features. 
 
 <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Features.png" height="250">
 
@@ -26,7 +28,7 @@ Regularizing the GRU networks reduce overfitting, as seen by less span between t
 
 <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/acc_learning_curves.png" width="800">
 
-**Dropout:** By leaving out notes along the melodies, a lossy noise and therefore a completion task is introduced to the models, so during training the next-step prediction will rely more on the previous GRU activations \\(h^{(t−1)}\\) and the horizontal connections will be enhanced to make up for the missing input.
+**Dropout:** By leaving out notes along the melodies, a lossy noise and therefore a completion task is introduced to the models, so during training the next-step prediction will rely more on the previous GRU activations h<sup>t-1</sup> and the horizontal connections will be enhanced to make up for the missing input.
 
 **Prediction input**: By feeding in the previous prediction, a stronger loss signal will traverse across the horizontal connections and vanishing gradients can be avoided.   
 
