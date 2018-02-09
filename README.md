@@ -11,9 +11,6 @@ The model is also expanded to feeding the previous prediction from the output-ne
 The final documentation of the project and results can be found [here](https://www.dropbox.com/s/i4fs83z07st24p3/report.pdf?dl=0). 
 
 ### Data pre-processing 
-
-h<sub>&theta;</sub>(x) = &theta;<sub>o</sub> x + &theta;<sub>1</sub>x
-
 From ABC-format to Music21 objects to zero-padded one-hot encoded vectors for each note (pitch and duration) in each melody (list of lists of vectors --> numpy array X=[M, N, F]=[Melodies, Notes, Features]). Here all notes in all melodies are represented by a duration tensor, X<sub>d</sub>, with 14 features and a pitch tensor, X<sub>d</sub>, with 35 features. 
 
 <img src="https://github.com/maximillian91/recurrent-neural-notes/blob/master/fig/Features.png" height="250">
