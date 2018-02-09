@@ -1,7 +1,3 @@
-<script type="text/javascript"
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
-
 # recurrent-neural-notes
 
 Exam project in the [Deep Learning course][deep-learning] at DTU.
